@@ -1,5 +1,5 @@
 const { Success, Failure, Parser } = require("./types");
-const { pipe } = require("./helpers");
+const { pipe, curry } = require("./helpers");
 
 const pchar = (charToMatch) => {
   const innerFn = (str) => {
@@ -11,14 +11,15 @@ const pchar = (charToMatch) => {
       const remaining = str.slice(1);
       return new Success([charToMatch, remaining]);
     }
-    const msg = `Expectin '${charToMatch}'. Got '${first}'`;
+    const msg = `Expecting '${charToMatch}'. Got '${first}'`;
     return new Failure(msg);
   };
   return Parser.of(innerFn);
 };
 
-const run = (parser) => (input) => parser.parser(input);
-const andThen = (parser1) => (parser2) => {
+const run = curry((parser, input) => parser.parser(input));
+
+const andThen = curry((parser1, parser2) => {
   const innerFn = (input) => {
     const result1 = run(parser1)(input);
     if (result1 instanceof Failure) {
@@ -41,8 +42,9 @@ const andThen = (parser1) => (parser2) => {
   };
 
   return Parser.of(innerFn);
-};
-const orElse = (parser1, parser2) => {
+});
+
+const orElse = curry((parser1, parser2) => {
   const innerFn = (input) => {
     const result1 = run(parser1)(input);
     if (result1 instanceof Success) {
@@ -58,41 +60,34 @@ const orElse = (parser1, parser2) => {
   };
 
   return Parser.of(innerFn);
-};
+});
 
 const choice = (listOfParsers) => listOfParsers.reduce(orElse);
 const anyOf = (listOfChars) => choice(listOfChars.map((char) => pchar(char)));
 
-const parseDigit = anyOf(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]);
+// let mapP f parser =
+//   let innerFn input =
+//     // run parser with the input
+//     let result = run parser input
 
-console.log(run(parseDigit)("ffd"))
+//     // test the result for Failure/Success
+//     match result with
+//     | Success (value,remaining) ->
+//       // if success, return the value transformed by f
+//       let newValue = f value
+//       Success (newValue, remaining)
 
-// Testing
-const parseA = pchar("A");
-const parseB = pchar("B");
-// const parseAThenB = parseA.andThen(parseB);
-const parseAThenB = andThen(parseA)(parseB);
+//     | Failure err ->
+//       // if failed, return the error
+//       Failure err
+//   // return the inner function
+//   Parser innerFn
 
-// console.log(parseAThenB.run("ABC"));
-// console.log(parseAThenB.run("ZBC"));
-// console.log(parseAThenB.run("AZC"));
-
-// const parseAOrElseB = parseA.orElse(parseB);
-const parseAOrElseB = orElse(parseA, parseB);
-
-// console.log(parseAOrElseB.run("AZZ"));
-// console.log(parseAOrElseB.run("BZZ"));
-// console.log(parseAOrElseB.run("CZZ"));
-
-const parseC = pchar("C");
-const bOrElseC = parseB.orElse(parseC);
-const aAndThenBorC = parseA.andThen(bOrElseC);
-
-// console.log(aAndThenBorC.run("ABZ"));
-// console.log(aAndThenBorC.run("ACZ"));
-// console.log(aAndThenBorC.run("QBZ"));
-// console.log(aAndThenBorC.run("AQZ"));
-
-const oneOf = choice([parseA, parseB, parseC]);
-
-// console.log(run(oneOf)("ABC"));
+module.exports = {
+  pchar,
+  run,
+  andThen,
+  orElse,
+  choice,
+  anyOf,
+};
