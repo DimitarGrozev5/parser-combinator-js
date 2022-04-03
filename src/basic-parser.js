@@ -65,23 +65,24 @@ const orElse = curry((parser1, parser2) => {
 const choice = (listOfParsers) => listOfParsers.reduce(orElse);
 const anyOf = (listOfChars) => choice(listOfChars.map((char) => pchar(char)));
 
-// let mapP f parser =
-//   let innerFn input =
-//     // run parser with the input
-//     let result = run parser input
+const mapP = curry((f, parser) => {
+  const innerFn = (input) => {
+    // run parser with the input
+    const result = run(parser, input);
 
-//     // test the result for Failure/Success
-//     match result with
-//     | Success (value,remaining) ->
-//       // if success, return the value transformed by f
-//       let newValue = f value
-//       Success (newValue, remaining)
+    // test the result for Failure/Success
+    if (result instanceof Success) {
+      const [value, remaining] = result.val;
+      // if success, return the value transformed by f
+      const newValue = f(value);
+      return Success.of(newValue, remaining);
+    }
+    // if failed, return the error
+    return result;
+  };
 
-//     | Failure err ->
-//       // if failed, return the error
-//       Failure err
-//   // return the inner function
-//   Parser innerFn
+  return Parser.of(innerFn);
+});
 
 module.exports = {
   pchar,
