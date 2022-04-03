@@ -19,6 +19,7 @@ const pchar = (charToMatch) => {
 
 const run = curry((parser, input) => parser.parser(input));
 
+// .>>.
 const andThen = curry((parser1, parser2) => {
   const innerFn = (input) => {
     const result1 = run(parser1)(input);
@@ -44,6 +45,7 @@ const andThen = curry((parser1, parser2) => {
   return Parser.of(innerFn);
 });
 
+// <|>
 const orElse = curry((parser1, parser2) => {
   const innerFn = (input) => {
     const result1 = run(parser1)(input);
@@ -65,6 +67,7 @@ const orElse = curry((parser1, parser2) => {
 const choice = (listOfParsers) => listOfParsers.reduce(orElse);
 const anyOf = (listOfChars) => choice(listOfChars.map((char) => pchar(char)));
 
+// |>>
 const mapP = curry((f, parser) => {
   const innerFn = (input) => {
     // run parser with the input
@@ -75,7 +78,7 @@ const mapP = curry((f, parser) => {
       const [value, remaining] = result.val;
       // if success, return the value transformed by f
       const newValue = f(value);
-      return Success.of(newValue, remaining);
+      return Success.of([newValue, remaining]);
     }
     // if failed, return the error
     return result;
@@ -83,6 +86,42 @@ const mapP = curry((f, parser) => {
 
   return Parser.of(innerFn);
 });
+
+const returnP = (x) => {
+  const innerFn = (input) => {
+    // ignore the input and return x
+    return Success.of([x, input]);
+  };
+  // return the inner function
+  return Parser.of(innerFn);
+};
+
+// <*>
+let applyP = curry((fP, xP) => {
+  // create a Parser containing a pair (f,x)
+  const parser = fP.andThen(xP);
+  // map the pair by applying f to x
+  return mapP((f, x) => f(x));
+});
+
+// const parseDigit = anyOf(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
+
+// const parseThreeDigitsAsStr = (function () {
+//   // create a parser that returns a tuple
+//   const tupleParser = parseDigit.andThen(parseDigit).andThen(parseDigit);
+//   // const tupleParser = andThen(parseDigit, andThen(parseDigit, parseDigit));
+
+//   // create a function that turns the tuple into a string
+//   const transformTuple = ([[c1, c2], c3]) => "" + c1 + c2 + c3;
+
+//   // use "map" to combine them
+//   return mapP(transformTuple, tupleParser);
+// })();
+
+// const parseThreeDigitsAsInt = mapP(Number, parseThreeDigitsAsStr);
+
+// console.log(run(parseThreeDigitsAsStr, "123A").val);
+// console.log(run(parseThreeDigitsAsInt, "123A").val);
 
 module.exports = {
   pchar,
