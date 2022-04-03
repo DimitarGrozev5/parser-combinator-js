@@ -21,9 +21,12 @@ const curry = (fn) => {
   return given([]);
 };
 
-// const test = curry((a, b, c) => a + b + c);
-// const t1 = test(1)(2);
-// console.log(t1(3));
-// console.log(test(1)(5)(5));
+// Doesn't work
+const addFnAsDotToParser = (label, object, fn) => {
+  object.prototype[label] = function (...args) {
+    const allArgs = [this, ...args];
+    return fn(...allArgs);
+  };
+};
 
-module.exports = { pipe, curry };
+module.exports = { pipe, curry, addFnAsDotToParser };

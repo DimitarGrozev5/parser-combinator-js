@@ -1,5 +1,5 @@
 const { Success, Failure, Parser } = require("./types");
-const { pipe, curry } = require("./helpers");
+const { pipe, curry, addFnAsDotToParser } = require("./helpers");
 
 const pchar = (charToMatch) => {
   const innerFn = (str) => {
@@ -44,6 +44,7 @@ const andThen = curry((parser1, parser2) => {
 
   return Parser.of(innerFn);
 });
+addFnAsDotToParser("andThen", Parser, andThen);
 
 // <|>
 const orElse = curry((parser1, parser2) => {
@@ -63,6 +64,7 @@ const orElse = curry((parser1, parser2) => {
 
   return Parser.of(innerFn);
 });
+addFnAsDotToParser("orElse", Parser, orElse);
 
 const choice = (listOfParsers) => listOfParsers.reduce(orElse);
 const anyOf = (listOfChars) => choice(listOfChars.map((char) => pchar(char)));
@@ -103,6 +105,8 @@ let applyP = curry((fP, xP) => {
   // map the pair by applying f to x
   return mapP((f, x) => f(x));
 });
+
+
 
 // const parseDigit = anyOf(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
 
