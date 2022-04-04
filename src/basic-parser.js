@@ -64,11 +64,12 @@ const orElse = curry((parser1, parser2) => {
 
   return Parser.of(innerFn);
 });
-addFnAsDotToParser("orElse", Parser, orElse);
+// addFnAsDotToParser("orElse", Parser, orElse);
 
 const choice = (listOfParsers) => listOfParsers.reduce(orElse);
 const anyOf = (listOfChars) => choice(listOfChars.map((char) => pchar(char)));
 
+// <!>
 // |>>
 const mapP = curry((f, parser) => {
   const innerFn = (input) => {
@@ -99,31 +100,36 @@ const returnP = (x) => {
 };
 
 // <*>
-let applyP = curry((fP, xP) => {
+const applyP = curry((fP, xP) => {
   // create a Parser containing a pair (f,x)
-  const parser = fP.andThen(xP);
+  const parser = andThen(fP, xP);
   // map the pair by applying f to x
-  return mapP((f, x) => f(x));
+  return mapP(parser, (f, x) => f(x));
 });
 
-// const parseDigit = anyOf(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
+const lift2 = curry((f, xP, yP) => returnP(applyP(f, applyP(xP, yP))));
 
-// const parseThreeDigitsAsStr = (function () {
-//   // create a parser that returns a tuple
-//   const tupleParser = parseDigit.andThen(parseDigit).andThen(parseDigit);
-//   // const tupleParser = andThen(parseDigit, andThen(parseDigit, parseDigit));
+const sequence = (parserList) => {
+  // define the "cons" function, which is a two parameter function
+  const cons = curry((head, tail) => [head, ...tail]);
 
-//   // create a function that turns the tuple into a string
-//   const transformTuple = ([[c1, c2], c3]) => "" + c1 + c2 + c3;
+  // lift it to Parser World
+  const consP = lift2(cons);
 
-//   // use "map" to combine them
-//   return mapP(transformTuple, tupleParser);
-// })();
+  // process the list of parsers recursively
+  if (parserList.length === 0) {
+    return returnP([]);
+  } else {
+    return consP(parserList[0], sequence(parserList.slice(1)));
+  }
+};
 
-// const parseThreeDigitsAsInt = mapP(Number, parseThreeDigitsAsStr);
+const parsers = [pchar("A"), pchar("B"), pchar("C")];
+let combined = sequence(parsers);
 
-// console.log(run(parseThreeDigitsAsStr, "123A").val);
-// console.log(run(parseThreeDigitsAsInt, "123A").val);
+console.log(run(combined, "ABCD").val);
+// Success (['A'; 'B'; 'C'], "D")
+
 
 module.exports = {
   pchar,
@@ -132,4 +138,5 @@ module.exports = {
   orElse,
   choice,
   anyOf,
+  mapP,
 };
