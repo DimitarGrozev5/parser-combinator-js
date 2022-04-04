@@ -107,7 +107,7 @@ const applyP = curry((fP, xP) => {
   return mapP(([f, x]) => f(x), parser);
 });
 
-const lift2 = curry((f, xP, yP) => returnP(applyP(f, applyP(xP, yP))));
+const lift2 = curry((f, xP, yP) => returnP(applyP(applyP(f, xP), yP)));
 
 const sequence = (parserList) => {
   // define the "cons" function, which is a two parameter function
