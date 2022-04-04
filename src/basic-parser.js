@@ -140,4 +140,5 @@ module.exports = {
   mapP,
   returnP,
   applyP,
+  lift2,
 };

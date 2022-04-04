@@ -8,6 +8,7 @@ const {
   mapP,
   returnP,
   applyP,
+  lift2,
 } = require("../src/basic-parser");
 const { Success, Failure, Parser } = require("../src/types");
 const { expect } = require("chai");
@@ -137,7 +138,7 @@ describe("Tests for basic parsers", () => {
     expect(parseString).to.be.instanceOf(Success);
     expect(parseString.val).to.eql(["A", "BC"]);
   });
-  it.only("applyP works", () => {
+  it("applyP works", () => {
     const add = (a) => a + 1;
     expect(add(1)).to.equal(2);
 
@@ -150,5 +151,35 @@ describe("Tests for basic parsers", () => {
     const result2 = run(result1, "BC");
     expect(result2).to.be.instanceOf(Success);
     expect(result2.val).to.eql([2, "BC"]);
+  });
+  it("applyP works; take 2", () => {
+    const add = (a) => a + 1;
+    expect(add(1)).to.equal(2);
+
+    const addP = returnP(add);
+    const p1 = returnP(1);
+
+    const addP1 = applyP(addP);
+    const result1 = addP1(p1);
+    expect(result1).to.be.instanceOf(Parser);
+
+    const result2 = run(result1, "BC");
+    expect(result2).to.be.instanceOf(Success);
+    expect(result2.val).to.eql([2, "BC"]);
+  });
+  it.only("lift2 works", () => {
+    const add = (a, b) => a + b;
+    expect(add(2, 2)).to.equal(4);
+
+    const addP = returnP(add);
+    const p2 = returnP(2);
+
+    const liftedAdd = lift2(addP);
+    const result = liftedAdd(returnP(2), returnP(2));
+    expect(result).to.be.instanceOf(Parser);
+
+    const result1 = run(result, "BC");
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql([4, "BC"]);
   });
 });
