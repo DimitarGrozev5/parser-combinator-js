@@ -138,17 +138,17 @@ describe("Tests for basic parsers", () => {
     expect(parseString.val).to.eql(["A", "BC"]);
   });
   it.only("applyP works", () => {
-    const add = (a, b) => a + b;
-    expect(add(1, 3)).to.equal(4);
+    const add = (a) => a + 1;
+    expect(add(1)).to.equal(2);
 
     const addP = returnP(add);
     const p1 = returnP(1);
-    const p3 = returnP(3);
 
     const result1 = applyP(addP, p1);
     expect(result1).to.be.instanceOf(Parser);
 
-    const result2 = run(result1, p3);
-    expect(result2).to.be.instanceOf(Parser);
+    const result2 = run(result1, "BC");
+    expect(result2).to.be.instanceOf(Success);
+    expect(result2.val).to.eql([2, "BC"]);
   });
 });

@@ -104,7 +104,7 @@ const applyP = curry((fP, xP) => {
   // create a Parser containing a pair (f,x)
   const parser = andThen(fP, xP);
   // map the pair by applying f to x
-  return mapP((f, x) => f(x), parser);
+  return mapP(([f, x]) => f(x), parser);
 });
 
 const lift2 = curry((f, xP, yP) => returnP(applyP(f, applyP(xP, yP))));
