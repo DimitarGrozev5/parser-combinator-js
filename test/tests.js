@@ -6,6 +6,8 @@ const {
   choice,
   anyOf,
   mapP,
+  returnP,
+  applyP,
 } = require("../src/basic-parser");
 const { Success, Failure, Parser } = require("../src/types");
 const { expect } = require("chai");
@@ -126,5 +128,27 @@ describe("Tests for basic parsers", () => {
 
     expect(result2).to.be.instanceOf(Failure);
     expect(result2.val).to.equal("Expecting '3'. Got 'A'");
+  });
+  it("returnP works", () => {
+    const testParser = returnP("A");
+    expect(testParser).to.be.instanceOf(Parser);
+
+    const parseString = run(testParser, "BC");
+    expect(parseString).to.be.instanceOf(Success);
+    expect(parseString.val).to.eql(["A", "BC"]);
+  });
+  it.only("applyP works", () => {
+    const add = (a, b) => a + b;
+    expect(add(1, 3)).to.equal(4);
+
+    const addP = returnP(add);
+    const p1 = returnP(1);
+    const p3 = returnP(3);
+
+    const result1 = applyP(addP, p1);
+    expect(result1).to.be.instanceOf(Parser);
+
+    const result2 = run(result1, p3);
+    expect(result2).to.be.instanceOf(Parser);
   });
 });

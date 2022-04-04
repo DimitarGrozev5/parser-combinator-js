@@ -104,7 +104,7 @@ const applyP = curry((fP, xP) => {
   // create a Parser containing a pair (f,x)
   const parser = andThen(fP, xP);
   // map the pair by applying f to x
-  return mapP(parser, (f, x) => f(x));
+  return mapP((f, x) => f(x), parser);
 });
 
 const lift2 = curry((f, xP, yP) => returnP(applyP(f, applyP(xP, yP))));
@@ -130,7 +130,6 @@ let combined = sequence(parsers);
 console.log(run(combined, "ABCD").val);
 // Success (['A'; 'B'; 'C'], "D")
 
-
 module.exports = {
   pchar,
   run,
@@ -139,4 +138,6 @@ module.exports = {
   choice,
   anyOf,
   mapP,
+  returnP,
+  applyP,
 };
