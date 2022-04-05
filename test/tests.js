@@ -12,6 +12,7 @@ const {
 } = require("../src/basic-parser");
 const { Success, Failure, Parser } = require("../src/types");
 const { expect } = require("chai");
+const { curry } = require("../src/helpers");
 
 describe("Tests for basic parsers", () => {
   it("pchar works", () => {
@@ -167,14 +168,11 @@ describe("Tests for basic parsers", () => {
     expect(result2).to.be.instanceOf(Success);
     expect(result2.val).to.eql([2, "BC"]);
   });
-  it.only("lift2 works", () => {
-    const add = (a, b) => a + b;
+  it("lift2 works", () => {
+    const add = curry((a, b) => a + b);
     expect(add(2, 2)).to.equal(4);
 
-    const addP = returnP(add);
-    const p2 = returnP(2);
-
-    const liftedAdd = lift2(addP);
+    const liftedAdd = lift2(add);
     const result = liftedAdd(returnP(2), returnP(2));
     expect(result).to.be.instanceOf(Parser);
 

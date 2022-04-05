@@ -107,7 +107,7 @@ const applyP = curry((fP, xP) => {
   return mapP(([f, x]) => f(x), parser);
 });
 
-const lift2 = curry((f, xP, yP) => returnP(applyP(f, applyP(xP, yP))));
+const lift2 = curry((f, xP, yP) => applyP(applyP(returnP(f), xP), yP));
 
 const sequence = (parserList) => {
   // define the "cons" function, which is a two parameter function
@@ -127,7 +127,7 @@ const sequence = (parserList) => {
 const parsers = [pchar("A"), pchar("B"), pchar("C")];
 let combined = sequence(parsers);
 
-console.log(run(combined, "ABCD").val);
+// console.log(run(combined, "ABCD").val);
 // Success (['A'; 'B'; 'C'], "D")
 
 module.exports = {
