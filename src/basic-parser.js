@@ -113,6 +113,7 @@ const lift2 = curry((f, xP, yP) => applyP(applyP(returnP(f), xP), yP));
 // const startsWith = curry((str, prefix) => str.startsWith(prefix));
 // const startsWithP = lift2(startsWith);
 
+// Turning a list of parsers in to a single parser
 const sequence = (parserList) => {
   // define the "cons" function, which is a two parameter function
   const cons = curry((head, tail) => [head, ...tail]);
@@ -128,6 +129,43 @@ const sequence = (parserList) => {
   }
 };
 
+// Parser that matches a string
+const splitStr = (str) => str.split("");
+const mapArr = (fn) => (arr) => arr.map(fn);
+const joinArr = (arr) => arr.join("");
+// match a specific string
+const pstring = (str) =>
+  pipe(str)(splitStr, mapArr(pchar), sequence, mapP(joinArr));
+
+// Function that matches a Parser zero or more times
+const parseZeroOrMore = curry((parser, input) => {
+  // run parser with the input
+  const firstResult = run(parser, input);
+  // test the result for Failure/Success
+  if (firstResult instanceof Failure) {
+    // if parse fails, return empty list
+    return [[], input];
+  } else {
+    // if parse succeeds, call recursively
+    // to get the subsequent values
+    const [firstValue, inputAfterFirstParse] = firstResult.val;
+    const [subsequentValues, remainingInput] = parseZeroOrMore(
+      parser,
+      inputAfterFirstParse
+    );
+    const values = [firstValue, ...subsequentValues];
+    return [values, remainingInput];
+  }
+});
+
+/// match zero or more occurrences of the specified parser
+const many = (parser) => {
+  // parse the input -- wrap in Success as it always succeeds
+  const innerFn = (input) => Success.of(parseZeroOrMore(parser, input));
+
+  Parser.of(innerFn);
+};
+
 module.exports = {
   pchar,
   run,
@@ -140,4 +178,5 @@ module.exports = {
   applyP,
   lift2,
   sequence,
+  pstring,many
 };

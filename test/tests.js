@@ -10,6 +10,8 @@ const {
   applyP,
   lift2,
   sequence,
+  pstring,
+  many,
 } = require("../src/basic-parser");
 const { Success, Failure, Parser } = require("../src/types");
 const { expect } = require("chai");
@@ -189,5 +191,44 @@ describe("Tests for basic parsers", () => {
 
     expect(result).to.be.instanceOf(Success);
     expect(result.val).to.eql([["A", "B", "C"], "D"]);
+  });
+  it("pstring works", () => {
+    const parseABC = pstring("ABC");
+
+    const result1 = run(parseABC, "ABCDE"); // Success ("ABC", "DE")
+    const result2 = run(parseABC, "A|CDE"); // Failure "Expecting 'B'. Got '|'"
+    const result3 = run(parseABC, "AB|DE"); // Failure "Expecting 'C'. Got '|'"
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql(["ABC", "DE"]);
+
+    expect(result2).to.be.instanceOf(Failure);
+    expect(result2.val).to.equal("Expecting 'B'. Got '|'");
+
+    expect(result3).to.be.instanceOf(Failure);
+    expect(result3.val).to.equal("Expecting 'C'. Got '|'");
+  });
+  it("many works", () => {
+    const manyA = many(pchar("A"));
+
+    // test some success cases
+    const result1 = run(manyA, "ABCD"); // Success (['A'], "BCD")
+    const result2 = run(manyA, "AACD"); // Success (['A'; 'A'], "CD")
+    const result3 = run(manyA, "AAAD"); // Success (['A'; 'A'; 'A'], "D")
+
+    // test a case with no matches
+    const result4 = run(manyA, "|BCD"); // Success ([], "|BCD")
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql([["A"], "BCD"]);
+
+    expect(result2).to.be.instanceOf(Success);
+    expect(result2.val).to.eql([["A", "A"], "CD"]);
+
+    expect(result3).to.be.instanceOf(Success);
+    expect(result3.val).to.eql([["A", "A", "A"], "D"]);
+
+    expect(result4).to.be.instanceOf(Success);
+    expect(result4.val).to.eql([[], "|BCD"]);
   });
 });
