@@ -9,6 +9,7 @@ const {
   returnP,
   applyP,
   lift2,
+  sequence,
 } = require("../src/basic-parser");
 const { Success, Failure, Parser } = require("../src/types");
 const { expect } = require("chai");
@@ -179,5 +180,14 @@ describe("Tests for basic parsers", () => {
     const result1 = run(result, "BC");
     expect(result1).to.be.instanceOf(Success);
     expect(result1.val).to.eql([4, "BC"]);
+  });
+  it("sequence works", () => {
+    const parsers = [pchar("A"), pchar("B"), pchar("C")];
+    let combined = sequence(parsers);
+
+    const result = run(combined, "ABCD");
+
+    expect(result).to.be.instanceOf(Success);
+    expect(result.val).to.eql([["A", "B", "C"], "D"]);
   });
 });

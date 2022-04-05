@@ -124,12 +124,6 @@ const sequence = (parserList) => {
   }
 };
 
-const parsers = [pchar("A"), pchar("B"), pchar("C")];
-let combined = sequence(parsers);
-
-// console.log(run(combined, "ABCD").val);
-// Success (['A'; 'B'; 'C'], "D")
-
 module.exports = {
   pchar,
   run,
@@ -141,4 +135,5 @@ module.exports = {
   returnP,
   applyP,
   lift2,
+  sequence,
 };
