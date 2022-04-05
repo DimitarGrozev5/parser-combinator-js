@@ -109,6 +109,10 @@ const applyP = curry((fP, xP) => {
 
 const lift2 = curry((f, xP, yP) => applyP(applyP(returnP(f), xP), yP));
 
+// Untested
+// const startsWith = curry((str, prefix) => str.startsWith(prefix));
+// const startsWithP = lift2(startsWith);
+
 const sequence = (parserList) => {
   // define the "cons" function, which is a two parameter function
   const cons = curry((head, tail) => [head, ...tail]);
