@@ -158,13 +158,23 @@ const parseZeroOrMore = curry((parser, input) => {
   }
 });
 
-/// match zero or more occurrences of the specified parser
+// match zero or more occurrences of the specified parser
 const many = (parser) => {
   // parse the input -- wrap in Success as it always succeeds
   const innerFn = (input) => Success.of(parseZeroOrMore(parser, input));
 
-  Parser.of(innerFn);
+  return Parser.of(innerFn);
 };
+
+// Match zero or more whitespaces
+// let whitespaceChar = anyOf [' '; '\t'; '\n']
+// let whitespace = many whitespaceChar
+
+// run whitespace "ABC"  // Success ([], "ABC")
+// run whitespace " ABC"  // Success ([' '], "ABC")
+// run whitespace "\tABC"  // Success (['\t'], "ABC")
+
+
 
 module.exports = {
   pchar,
@@ -178,5 +188,6 @@ module.exports = {
   applyP,
   lift2,
   sequence,
-  pstring,many
+  pstring,
+  many,
 };

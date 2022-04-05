@@ -231,4 +231,24 @@ describe("Tests for basic parsers", () => {
     expect(result4).to.be.instanceOf(Success);
     expect(result4.val).to.eql([[], "|BCD"]);
   });
+  it("many works; take 2", () => {
+    const manyAB = many(pstring("AB"));
+
+    const result1 = run(manyAB, "ABCD"); // Success (["AB"], "CD")
+    const result2 = run(manyAB, "ABABCD"); // Success (["AB"; "AB"], "CD")
+    const result3 = run(manyAB, "ZCD"); // Success ([], "ZCD")
+    const result4 = run(manyAB, "AZCD"); // Success ([], "AZCD")
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql([["AB"], "CD"]);
+
+    expect(result2).to.be.instanceOf(Success);
+    expect(result2.val).to.eql([["AB", "AB"], "CD"]);
+
+    expect(result3).to.be.instanceOf(Success);
+    expect(result3.val).to.eql([[], "ZCD"]);
+
+    expect(result4).to.be.instanceOf(Success);
+    expect(result4.val).to.eql([[], "AZCD"]);
+  });
 });
