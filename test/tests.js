@@ -41,10 +41,10 @@ describe("Tests for basic parsers", () => {
     expect(result1.val).to.eql(["A", "BC"]);
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.equal("Expecting 'A'. Got 'Z'");
+    expect(result2.val).to.eql(["A", "Unexpected 'Z'"]);
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val).to.equal("No more input");
+    expect(result3.val).to.eql(["A", "No more input"]);
   });
   it("andThen works", () => {
     const parseA = pchar("A");

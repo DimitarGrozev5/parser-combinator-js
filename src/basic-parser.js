@@ -33,22 +33,49 @@ const getLabel = (parser) =>
   // get label
   parser.parserLabel;
 
-const pchar = (charToMatch) => {
-  const label = "unknown";
-  const innerFn = (str) => {
-    if (!str) {
-      return new Failure("No more input");
+/// Match an input token if the predicate is satisfied
+const satisfy = curry((predicate, label) => {
+  const innerFn = (input) => {
+    if (!input) {
+      return Failure.of(label, "No more input");
+    } else {
+      const first = input[0];
+      if (predicate(first)) {
+        // <====== use predicate here
+        const remainingInput = input.slice(1);
+        return Success.of([first, remainingInput]);
+      } else {
+        const err = `Unexpected '${first}'`;
+        return Failure.of(label, err);
+      }
     }
-    const first = str[0];
-    if (first === charToMatch) {
-      const remaining = str.slice(1);
-      return new Success([charToMatch, remaining]);
-    }
-    const msg = `Expecting '${charToMatch}'. Got '${first}'`;
-    return new Failure(msg);
   };
+  // return the parser
   return Parser.of(innerFn, label);
+});
+
+const pchar = (charToMatch) => {
+  const predicate = (ch) => ch === charToMatch;
+  const label = `${charToMatch}`;
+  return satisfy(predicate, label);
 };
+
+// const pchar = (charToMatch) => {
+//   const label = "unknown";
+//   const innerFn = (str) => {
+//     if (!str) {
+//       return new Failure("No more input");
+//     }
+//     const first = str[0];
+//     if (first === charToMatch) {
+//       const remaining = str.slice(1);
+//       return new Success([charToMatch, remaining]);
+//     }
+//     const msg = `Expecting '${charToMatch}'. Got '${first}'`;
+//     return new Failure(msg);
+//   };
+//   return Parser.of(innerFn, label);
+// };
 
 const run = curry((parser, input) => parser.parser(input));
 
@@ -78,7 +105,7 @@ const andThen = curry((parser1, parser2) => {
 
   return Parser.of(innerFn, label);
 });
-addFnAsDotToParser("andThen", Parser, andThen);
+// addFnAsDotToParser("andThen", Parser, andThen);
 
 // <|>
 const orElse = curry((parser1, parser2) => {
