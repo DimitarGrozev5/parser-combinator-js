@@ -59,10 +59,10 @@ describe("Tests for basic parsers", () => {
     expect(result1.val).to.eql([["A", "B"], "C"]);
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.equal("Expecting 'A'. Got 'Z'");
+    expect(result2.val).to.eql(["A", "Unexpected 'Z'"]);
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val).to.equal("Expecting 'B'. Got 'Z'");
+    expect(result3.val).to.eql(["B", "Unexpected 'Z'"]);
   });
   it("orElse works", () => {
     const parseA = pchar("A");
@@ -80,7 +80,7 @@ describe("Tests for basic parsers", () => {
     expect(result2.val).to.eql(["B", "ZZ"]);
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val).to.equal("Expecting 'B'. Got 'C'");
+    expect(result3.val).to.eql(["B", "Unexpected 'C'"]);
   });
   it("choice works", () => {
     const parseA = pchar("A");
@@ -103,7 +103,7 @@ describe("Tests for basic parsers", () => {
     expect(result3.val).to.eql(["C", "ZZ"]);
 
     expect(result4).to.be.instanceOf(Failure);
-    expect(result4.val).to.equal("Expecting 'C'. Got 'Z'");
+    expect(result4.val).to.eql(["C", "Unexpected 'Z'"]);
   });
   it("anyOf works", () => {
     const parceABOrC = anyOf(["A", "B", "C"]);
@@ -123,7 +123,7 @@ describe("Tests for basic parsers", () => {
     expect(result3.val).to.eql(["C", "ZZ"]);
 
     expect(result4).to.be.instanceOf(Failure);
-    expect(result4.val).to.equal("Expecting 'C'. Got 'Z'");
+    expect(result4.val).to.eql(["any of A,B,C", "Unexpected 'Z'"]);
   });
   it("mapP works", () => {
     const parseDigit = anyOf(["1", "2", "3"]);
@@ -144,7 +144,7 @@ describe("Tests for basic parsers", () => {
     expect(result1.val).to.eql(["123", "A"]);
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.equal("Expecting '3'. Got 'A'");
+    expect(result2.val).to.eql(["any of 1,2,3", "Unexpected 'A'"]);
   });
   it("returnP works", () => {
     const testParser = returnP("A");
@@ -215,10 +215,10 @@ describe("Tests for basic parsers", () => {
     expect(result1.val).to.eql(["ABC", "DE"]);
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.equal("Expecting 'B'. Got '|'");
+    expect(result2.val).to.eql(["B", "Unexpected '|'"]);
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val).to.equal("Expecting 'C'. Got '|'");
+    expect(result3.val).to.eql(["C", "Unexpected '|'"]);
   });
   it("many works", () => {
     const manyA = many(pchar("A"));
@@ -290,7 +290,7 @@ describe("Tests for basic parsers", () => {
     expect(result4.val).to.eql([["1", "2", "3", "4"], ""]);
 
     expect(result5).to.be.instanceOf(Failure);
-    expect(result5.val).to.eql("Expecting '4'. Got 'A'");
+    expect(result5.val).to.eql(["any of 1,2,3,4", "Unexpected 'A'"]);
   });
   it("pint works", () => {
     const result1 = run(pint, "1ABC"); // Success (1, "ABC")
@@ -314,7 +314,7 @@ describe("Tests for basic parsers", () => {
     expect(result4.val).to.eql([1234, ""]);
 
     expect(result5).to.be.instanceOf(Failure);
-    expect(result5.val).to.eql("Expecting '9'. Got 'A'");
+    expect(result5.val).to.eql(["any of 0,1,2,3,4,5,6,7,8,9", "Unexpected 'A'"]);
 
     expect(result6).to.be.instanceOf(Success);
     expect(result6.val).to.eql([-123, "C"]);
@@ -365,7 +365,7 @@ describe("Tests for basic parsers", () => {
     expect(result1.val).to.eql([1234, ""]);
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.eql("Expecting '\"'. Got '1'");
+    expect(result2.val).to.eql([`"`, "Unexpected '1'"]);
   });
   it("sepBy1, sepBy work", () => {
     const comma = pchar(",");
@@ -394,7 +394,7 @@ describe("Tests for basic parsers", () => {
     expect(result3.val).to.eql([["1", "2", "3"], ";"]);
 
     expect(result4).to.be.instanceOf(Failure);
-    expect(result4.val).to.eql("Expecting '3'. Got 'Z'");
+    expect(result4.val).to.eql(["any of 1,2,3", "Unexpected 'Z'"]);
 
     expect(result5).to.be.instanceOf(Success);
     expect(result5.val).to.eql([["1"], ";"]);
@@ -428,9 +428,9 @@ describe("Tests for basic parsers", () => {
     expect(result1.val).to.eql([["A", "B"], "C"]);
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.equal("Expecting 'A'. Got 'Z'");
+    expect(result2.val).to.eql(["A", "Unexpected 'Z'"]);
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val).to.equal("Expecting 'B'. Got 'Z'");
+    expect(result3.val).to.eql(["B", "Unexpected 'Z'"]);
   });
 });

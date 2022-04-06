@@ -82,8 +82,6 @@ const andThen = curry((parser1, parser2) => {
         return Success.of([newValue, result2.val[1]]);
       }
     }
-
-    return Failure.of("Invalid input function");
   };
 
   return Parser.of(innerFn, label);
@@ -115,7 +113,7 @@ const choice = (listOfParsers) => listOfParsers.reduce(orElse);
 const anyOf = (listOfChars) => {
   const label = `any of ${listOfChars}`;
   const c = choice(listOfChars.map((char) => pchar(char)));
-  setLabel(c, label);
+  return setLabel(c, label);
 };
 
 // <!>
@@ -210,10 +208,11 @@ const parseZeroOrMore = curry((parser, input) => {
 
 // match zero or more occurrences of the specified parser
 const many = (parser) => {
+  let label = `zero or many ${getLabel(parser)}`;
   // parse the input -- wrap in Success as it always succeeds
   const innerFn = (input) => Success.of(parseZeroOrMore(parser, input));
 
-  return Parser.of(innerFn);
+  return Parser.of(innerFn, label);
 };
 
 // Match zero or more whitespaces
@@ -226,6 +225,7 @@ const many = (parser) => {
 
 // Мatch one or more occurrences of the specified parser
 const many1 = (parser) => {
+  let label = `many ${getLabel(parser)}`;
   const innerFn = (input) => {
     // run parser with the input
     const firstResult = run(parser, input);
@@ -242,7 +242,7 @@ const many1 = (parser) => {
     const values = [firstValue, ...subsequentValues];
     return Success.of([values, remainingInput]);
   };
-  return Parser.of(innerFn);
+  return Parser.of(innerFn, label);
 };
 
 // Optional char - zero or one occurence
