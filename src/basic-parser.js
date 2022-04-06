@@ -266,6 +266,25 @@ const sepBy = curry((p, sep) => {
   return orElse(s, empty);
 });
 
+/// "bindP" takes a parser-producing function f, and a parser p
+/// and passes the output of p into f, to create a new parser
+const bindP = curry((f, p) => {
+  const innerFn = (input) => {
+    const result1 = run(p, input);
+    // return error from parser1
+    if (result1 instanceof Failure) {
+      return result1;
+    }
+
+    const [value1, remainingInput] = result1.val;
+    // apply f to get a new parser
+    const p2 = f(value1);
+    // run parser with remaining input
+    return run(p2, remainingInput);
+  };
+  return Parser.of(innerFn);
+});
+
 module.exports = {
   pchar,
   run,
@@ -288,4 +307,5 @@ module.exports = {
   between,
   sepBy1,
   sepBy,
+  bindP,
 };

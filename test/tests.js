@@ -20,6 +20,7 @@ const {
   between,
   sepBy1,
   sepBy,
+  bindP,
 } = require("../src/basic-parser");
 const { None, Some, Success, Failure, Parser } = require("../src/types");
 const { expect } = require("chai");
@@ -403,5 +404,30 @@ describe("Tests for basic parsers", () => {
 
     expect(result8).to.be.instanceOf(Success);
     expect(result8.val).to.eql([[], "Z;"]);
+  });
+  it("bindP works", () => {
+    const andThenb = curry((p1, p2) => {
+      return bindP(
+        (p1Result) => bindP((p2Result) => returnP([p1Result, p2Result]), p2),
+        p1
+      );
+    });
+
+    const parseA = pchar("A");
+    const parseB = pchar("B");
+    const parseAThenB = andThenb(parseA)(parseB);
+
+    const result1 = run(parseAThenB)("ABC");
+    const result2 = run(parseAThenB)("ZBC");
+    const result3 = run(parseAThenB)("AZC");
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql([["A", "B"], "C"]);
+
+    expect(result2).to.be.instanceOf(Failure);
+    expect(result2.val).to.equal("Expecting 'A'. Got 'Z'");
+
+    expect(result3).to.be.instanceOf(Failure);
+    expect(result3.val).to.equal("Expecting 'B'. Got 'Z'");
   });
 });
