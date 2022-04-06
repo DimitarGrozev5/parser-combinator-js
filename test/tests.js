@@ -30,7 +30,7 @@ const { expect } = require("chai");
 const { curry } = require("../src/helpers");
 
 describe("Tests for basic parsers", () => {
-  it.only("pchar works", () => {
+  it("pchar works", () => {
     const parseA = pchar("A");
 
     const result1 = run(parseA)("ABC");
