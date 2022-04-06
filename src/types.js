@@ -1,3 +1,28 @@
+//////////////////////////////////Option type
+class None {
+  map() {
+    return this;
+  }
+}
+None.of = function () {
+  return new None();
+};
+
+class Some {
+  constructor(val) {
+    this.val = val;
+  }
+  // map(fn) {
+  //   const result = fn(this.val);
+  //   if (result instanceof Success || result instanceof Failure) {
+  //     return result;
+  //   }
+  //   return new Success(result);
+  // }
+}
+Some.of = function (x) {
+  return new Some(x);
+};
 //////////////////////////////////Either type
 class Failure {
   constructor(val) {
@@ -66,6 +91,8 @@ Parser.of = function (x) {
 };
 
 module.exports = {
+  None,
+  Some,
   Success,
   Failure,
   Parser,

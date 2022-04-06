@@ -1,4 +1,4 @@
-const { Success, Failure, Parser } = require("./types");
+const { None, Some, Success, Failure, Parser } = require("./types");
 const { pipe, curry, addFnAsDotToParser } = require("./helpers");
 
 const pchar = (charToMatch) => {
@@ -201,6 +201,25 @@ const pint = mapP(
   many1(anyOf(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]))
 );
 
+// Optional char - zero or one occurence
+const opt = (p) => {
+  const some = mapP(Some.of, p);
+  const none = returnP(None.of());
+  return orElse(some, none);
+};
+
+const digit = anyOf(["1"]);
+const semi = pchar(";");
+const o = opt(semi);
+
+const digitThenSemicolon = andThen(digit, o);
+
+const result1 = run(digitThenSemicolon, "1"); // Success (('1', Some ';'), "")
+
+console.log(result1.val[0]);
+
+// const result2 = run(digitThenSemicolon, "1"); // Success (('1', None), "")
+
 module.exports = {
   pchar,
   run,
@@ -217,4 +236,5 @@ module.exports = {
   many,
   many1,
   pint,
+  opt,
 };

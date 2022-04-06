@@ -14,8 +14,9 @@ const {
   many,
   many1,
   pint,
+  opt,
 } = require("../src/basic-parser");
-const { Success, Failure, Parser } = require("../src/types");
+const { None, Some, Success, Failure, Parser } = require("../src/types");
 const { expect } = require("chai");
 const { curry } = require("../src/helpers");
 
@@ -303,5 +304,25 @@ describe("Tests for basic parsers", () => {
 
     expect(result5).to.be.instanceOf(Failure);
     expect(result5.val).to.eql("Expecting '9'. Got 'A'");
+  });
+  it("opt works", () => {
+    const digit = anyOf(["1"]);
+    const digitThenSemicolon = andThen(digit, opt(pchar(";")));
+
+    const result1 = run(digitThenSemicolon, "1;"); // Success (('1', Some ';'), "")
+    const result2 = run(digitThenSemicolon, "1"); // Success (('1', None), "")
+
+    expect(result1).to.be.instanceOf(Success);
+    const [[res1, op1], rem1] = result1.val;
+    expect(res1).to.equal("1");
+    expect(op1).to.be.instanceOf(Some);
+    expect(op1.val).to.equal(";");
+    expect(rem1).to.equal("");
+
+    expect(result2).to.be.instanceOf(Success);
+    const [[res2, op2], rem2] = result2.val;
+    expect(res2).to.equal("1");
+    expect(op2).to.be.instanceOf(None);
+    expect(rem2).to.equal("");
   });
 });
