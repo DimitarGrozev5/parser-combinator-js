@@ -13,6 +13,7 @@ const {
   pstring,
   many,
   many1,
+  pint,
 } = require("../src/basic-parser");
 const { Success, Failure, Parser } = require("../src/types");
 const { expect } = require("chai");
@@ -280,5 +281,27 @@ describe("Tests for basic parsers", () => {
 
     expect(result5).to.be.instanceOf(Failure);
     expect(result5.val).to.eql("Expecting '4'. Got 'A'");
+  });
+  it("pint works", () => {
+    const result1 = run(pint, "1ABC"); // Success (1, "ABC")
+    const result2 = run(pint, "12BC"); // Success (12, "BC")
+    const result3 = run(pint, "123C"); // Success (123, "C")
+    const result4 = run(pint, "1234"); // Success (1234, "")
+    const result5 = run(pint, "ABC"); // Failure "Expecting '9'. Got 'A'"
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql([1, "ABC"]);
+
+    expect(result2).to.be.instanceOf(Success);
+    expect(result2.val).to.eql([12, "BC"]);
+
+    expect(result3).to.be.instanceOf(Success);
+    expect(result3.val).to.eql([123, "C"]);
+
+    expect(result4).to.be.instanceOf(Success);
+    expect(result4.val).to.eql([1234, ""]);
+
+    expect(result5).to.be.instanceOf(Failure);
+    expect(result5.val).to.eql("Expecting '9'. Got 'A'");
   });
 });
