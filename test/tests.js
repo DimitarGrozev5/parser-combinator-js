@@ -1,4 +1,7 @@
 const {
+  printResult,
+  setLabel,
+  getLabel,
   pchar,
   run,
   andThen,
@@ -27,7 +30,7 @@ const { expect } = require("chai");
 const { curry } = require("../src/helpers");
 
 describe("Tests for basic parsers", () => {
-  it("pchar works", () => {
+  it.only("pchar works", () => {
     const parseA = pchar("A");
 
     const result1 = run(parseA)("ABC");

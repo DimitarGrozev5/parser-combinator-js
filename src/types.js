@@ -25,8 +25,8 @@ Some.of = function (x) {
 };
 //////////////////////////////////Either type
 class Failure {
-  constructor(val) {
-    this.val = val;
+  constructor(label, err) {
+    this.val = [label, err];
   }
   map() {
     return this;
@@ -34,9 +34,13 @@ class Failure {
   either(failureFn, successFn) {
     return failureFn(this.val);
   }
+  getResult() {
+    const [label, error] = this.val;
+    return `Error parsing ${label}\n${error}`;
+  }
 }
-Failure.of = function (x) {
-  return new Failure(x);
+Failure.of = function (label, x) {
+  return new Failure(label, x);
 };
 
 class Success {
@@ -52,6 +56,10 @@ class Success {
   }
   either(failureFn, successFn) {
     return successFn(this.val);
+  }
+  getResult() {
+    const [value, _input] = this.val;
+    return value;
   }
 }
 Success.of = function (x) {
@@ -79,11 +87,9 @@ Success.of = function (x) {
 
 //////////////////////////////////////////Parser type
 class Parser {
-  constructor(parser) {
+  constructor(parser, label) {
     this.parser = parser;
-  }
-  run(val) {
-    return this.parser(val);
+    this.parserLabel = label;
   }
 }
 Parser.of = function (x) {

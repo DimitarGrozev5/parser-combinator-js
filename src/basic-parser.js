@@ -1,7 +1,40 @@
 const { None, Some, Success, Failure, Parser } = require("./types");
 const { pipe, curry, addFnAsDotToParser } = require("./helpers");
 
+const printResult = (result) => {
+  if (result instanceof Success) {
+    const [value, _input] = result.val;
+    return value;
+  } else if (result instanceof Failure) {
+    const [label, error] = result.val;
+    return `Error parsing ${label}\n${error}`;
+  }
+};
+
+/// Update the label in the parser
+const setLabel = curry((parser, newLabel) => {
+  // change the inner function to use the new label
+  const newInnerFn = (input) => {
+    const result = parser.parser(input);
+    if (result instanceof Success) {
+      return result;
+    } else {
+      // if Failure, return new label
+      const [oldLabel, err] = result.val;
+      return Failure.of(newLabel, err);
+    }
+  };
+  // return the Parser
+  return Parser.of(newInnerFn, newLabel);
+});
+
+/// get the label from a parser
+const getLabel = (parser) =>
+  // get label
+  parser.parserLabel;
+
 const pchar = (charToMatch) => {
+  const label = "unknown";
   const innerFn = (str) => {
     if (!str) {
       return new Failure("No more input");
@@ -14,13 +47,14 @@ const pchar = (charToMatch) => {
     const msg = `Expecting '${charToMatch}'. Got '${first}'`;
     return new Failure(msg);
   };
-  return Parser.of(innerFn);
+  return Parser.of(innerFn, label);
 };
 
 const run = curry((parser, input) => parser.parser(input));
 
 // .>>.
 const andThen = curry((parser1, parser2) => {
+  const label = `${getLabel(parser1)} andThen ${getLabel(parser2)}`;
   const innerFn = (input) => {
     const result1 = run(parser1)(input);
     if (result1 instanceof Failure) {
@@ -42,12 +76,13 @@ const andThen = curry((parser1, parser2) => {
     return Failure.of("Invalid input function");
   };
 
-  return Parser.of(innerFn);
+  return Parser.of(innerFn, label);
 });
 addFnAsDotToParser("andThen", Parser, andThen);
 
 // <|>
 const orElse = curry((parser1, parser2) => {
+  const label = `${getLabel(parser1)} orElse ${getLabel(parser2)}`;
   const innerFn = (input) => {
     const result1 = run(parser1)(input);
     if (result1 instanceof Success) {
@@ -62,12 +97,16 @@ const orElse = curry((parser1, parser2) => {
     return Failure.of("Invalid input function");
   };
 
-  return Parser.of(innerFn);
+  return Parser.of(innerFn, label);
 });
 // addFnAsDotToParser("orElse", Parser, orElse);
 
 const choice = (listOfParsers) => listOfParsers.reduce(orElse);
-const anyOf = (listOfChars) => choice(listOfChars.map((char) => pchar(char)));
+const anyOf = (listOfChars) => {
+  const label = `any of ${listOfChars}`;
+  const c = choice(listOfChars.map((char) => pchar(char)));
+  setLabel(c, label);
+};
 
 // <!>
 // |>>
@@ -91,12 +130,13 @@ const mapP = curry((f, parser) => {
 });
 
 const returnP = (x) => {
+  const label = `${x}`;
   const innerFn = (input) => {
     // ignore the input and return x
     return Success.of([x, input]);
   };
   // return the inner function
-  return Parser.of(innerFn);
+  return Parser.of(innerFn, label);
 };
 
 // <*>
@@ -269,6 +309,7 @@ const sepBy = curry((p, sep) => {
 /// "bindP" takes a parser-producing function f, and a parser p
 /// and passes the output of p into f, to create a new parser
 const bindP = curry((f, p) => {
+  const label = "unknown";
   const innerFn = (input) => {
     const result1 = run(p, input);
     // return error from parser1
@@ -282,10 +323,13 @@ const bindP = curry((f, p) => {
     // run parser with remaining input
     return run(p2, remainingInput);
   };
-  return Parser.of(innerFn);
+  return Parser.of(innerFn, label);
 });
 
 module.exports = {
+  printResult,
+  setLabel,
+  getLabel,
   pchar,
   run,
   andThen,
