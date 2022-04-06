@@ -15,6 +15,11 @@ const {
   many1,
   pint,
   opt,
+  andThen1,
+  andThen2,
+  between,
+  sepBy1,
+  sepBy,
 } = require("../src/basic-parser");
 const { None, Some, Success, Failure, Parser } = require("../src/types");
 const { expect } = require("chai");
@@ -290,6 +295,8 @@ describe("Tests for basic parsers", () => {
     const result4 = run(pint, "1234"); // Success (1234, "")
     const result5 = run(pint, "ABC"); // Failure "Expecting '9'. Got 'A'"
 
+    const result6 = run(pint, "-123C"); // Success (123, "C")
+
     expect(result1).to.be.instanceOf(Success);
     expect(result1.val).to.eql([1, "ABC"]);
 
@@ -304,6 +311,9 @@ describe("Tests for basic parsers", () => {
 
     expect(result5).to.be.instanceOf(Failure);
     expect(result5.val).to.eql("Expecting '9'. Got 'A'");
+
+    expect(result6).to.be.instanceOf(Success);
+    expect(result6.val).to.eql([-123, "C"]);
   });
   it("opt works", () => {
     const digit = anyOf(["1"]);
@@ -324,5 +334,74 @@ describe("Tests for basic parsers", () => {
     expect(res2).to.equal("1");
     expect(op2).to.be.instanceOf(None);
     expect(rem2).to.equal("");
+  });
+  it("andThen1 works", () => {
+    const digit = anyOf(["1"]);
+
+    // use .>> below
+    let digitThenSemicolon = andThen1(digit, opt(pchar(";")));
+
+    const result1 = run(digitThenSemicolon, "1;"); // Success ('1', "")
+    const result2 = run(digitThenSemicolon, "1"); // Success ('1', "")
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql(["1", ""]);
+
+    expect(result2).to.be.instanceOf(Success);
+    expect(result2.val).to.eql(["1", ""]);
+  });
+  it("between works", () => {
+    const pdoublequote = pchar('"');
+    const quotedInteger = between(pdoublequote, pint, pdoublequote);
+
+    const result1 = run(quotedInteger, '"1234"'); // Success (1234, "")
+    const result2 = run(quotedInteger, "1234"); // Failure "Expecting '"'. Got '1'"
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql([1234, ""]);
+
+    expect(result2).to.be.instanceOf(Failure);
+    expect(result2.val).to.eql("Expecting '\"'. Got '1'");
+  });
+  it("sepBy1, sepBy work", () => {
+    const comma = pchar(",");
+    const digit = anyOf(["1", "2", "3"]);
+
+    const zeroOrMoreDigitList = sepBy(digit, comma);
+    const oneOrMoreDigitList = sepBy1(digit, comma);
+
+    const result1 = run(oneOrMoreDigitList, "1;"); // Success (['1'], ";")
+    const result2 = run(oneOrMoreDigitList, "1,2;"); // Success (['1'; '2'], ";")
+    const result3 = run(oneOrMoreDigitList, "1,2,3;"); // Success (['1'; '2'; '3'], ";")
+    const result4 = run(oneOrMoreDigitList, "Z;"); // Failure "Expecting '9'. Got 'Z'"
+
+    const result5 = run(zeroOrMoreDigitList, "1;"); // Success (['1'], ";")
+    const result6 = run(zeroOrMoreDigitList, "1,2;"); // Success (['1'; '2'], ";")
+    const result7 = run(zeroOrMoreDigitList, "1,2,3;"); // Success (['1'; '2'; '3'], ";")
+    const result8 = run(zeroOrMoreDigitList, "Z;"); // Success ([], "Z;")
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql([["1"], ";"]);
+
+    expect(result2).to.be.instanceOf(Success);
+    expect(result2.val).to.eql([["1", "2"], ";"]);
+
+    expect(result3).to.be.instanceOf(Success);
+    expect(result3.val).to.eql([["1", "2", "3"], ";"]);
+
+    expect(result4).to.be.instanceOf(Failure);
+    expect(result4.val).to.eql("Expecting '3'. Got 'Z'");
+
+    expect(result5).to.be.instanceOf(Success);
+    expect(result5.val).to.eql([["1"], ";"]);
+
+    expect(result6).to.be.instanceOf(Success);
+    expect(result6.val).to.eql([["1", "2"], ";"]);
+
+    expect(result7).to.be.instanceOf(Success);
+    expect(result7.val).to.eql([["1", "2", "3"], ";"]);
+
+    expect(result8).to.be.instanceOf(Success);
+    expect(result8.val).to.eql([[], "Z;"]);
   });
 });

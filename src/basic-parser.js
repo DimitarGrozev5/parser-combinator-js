@@ -195,12 +195,6 @@ const many1 = (parser) => {
   return Parser.of(innerFn);
 };
 
-// Parse an integer
-const pint = mapP(
-  (arr) => +arr.join(""),
-  many1(anyOf(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]))
-);
-
 // Optional char - zero or one occurence
 const opt = (p) => {
   const some = mapP(Some.of, p);
@@ -208,17 +202,69 @@ const opt = (p) => {
   return orElse(some, none);
 };
 
-const digit = anyOf(["1"]);
-const semi = pchar(";");
-const o = opt(semi);
+const pint = (() => {
+  // helper
+  const resultToInt = ([sign, charList]) => {
+    let i = +charList.join("");
+    if (sign instanceof Some) {
+      return -1 * i;
+    } else {
+      return i;
+    }
+  };
 
-const digitThenSemicolon = andThen(digit, o);
+  // define parser for one digit
+  const digit = anyOf(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
 
-const result1 = run(digitThenSemicolon, "1"); // Success (('1', Some ';'), "")
+  // define parser for one or more digits
+  const digits = many1(digit);
 
-console.log(result1.val[0]);
+  // parse and convert
+  const minusAndDigits = andThen(opt(pchar("-")), digits);
+  return mapP(resultToInt, minusAndDigits);
+})();
 
-// const result2 = run(digitThenSemicolon, "1"); // Success (('1', None), "")
+// .>>
+const andThen1 = curry((p1, p2) => {
+  const pair = andThen(p1, p2);
+  return mapP(([a, b]) => a, pair);
+});
+
+// >>.
+const andThen2 = curry((p1, p2) => {
+  const pair = andThen(p1, p2);
+  return mapP(([a, b]) => b, pair);
+});
+
+// Return two parsers, diregard whitespace between them
+// let whitespaceChar = anyOf [' '; '\t'; '\n']
+// let whitespace = many1 whitespaceChar
+
+// let ab = pstring "AB"
+// let cd = pstring "CD"
+// let ab_cd = (ab .>> whitespace) .>>. cd
+
+// run ab_cd "AB \t\nCD"   // Success (("AB", "CD"), "")
+
+// Keep only the result of the middle parser
+const between = curry((p1, p2, p3) => {
+  const p12 = andThen2(p1, p2);
+  return andThen1(p12, p3);
+});
+
+/// Parses one or more occurrences of p separated by sep
+const sepBy1 = curry((p, sep) => {
+  const sepThenP = andThen2(sep, p);
+  const pAndMany = andThen(p, many(sepThenP));
+  return mapP(([p, pList]) => [p, ...pList], pAndMany);
+});
+
+/// Parses zero or more occurrences of p separated by sep
+const sepBy = curry((p, sep) => {
+  const s = sepBy1(p, sep);
+  const empty = returnP([]);
+  return orElse(s, empty);
+});
 
 module.exports = {
   pchar,
@@ -237,4 +283,9 @@ module.exports = {
   many1,
   pint,
   opt,
+  andThen1,
+  andThen2,
+  between,
+  sepBy1,
+  sepBy,
 };
