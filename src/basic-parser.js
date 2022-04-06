@@ -174,7 +174,26 @@ const many = (parser) => {
 // run whitespace " ABC"  // Success ([' '], "ABC")
 // run whitespace "\tABC"  // Success (['\t'], "ABC")
 
-
+// Мatch one or more occurrences of the specified parser
+const many1 = (parser) => {
+  const innerFn = (input) => {
+    // run parser with the input
+    const firstResult = run(parser, input);
+    // test the result for Failure/Success
+    if (firstResult instanceof Failure) {
+      return firstResult;
+    }
+    // if first found, look for zeroOrMore now
+    const [firstValue, inputAfterFirstParse] = firstResult.val;
+    const [subsequentValues, remainingInput] = parseZeroOrMore(
+      parser,
+      inputAfterFirstParse
+    );
+    const values = [firstValue, ...subsequentValues];
+    return Success.of([values, remainingInput]);
+  };
+  return Parser.of(innerFn);
+};
 
 module.exports = {
   pchar,
@@ -190,4 +209,5 @@ module.exports = {
   sequence,
   pstring,
   many,
+  many1,
 };
