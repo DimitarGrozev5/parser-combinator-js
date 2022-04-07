@@ -53,7 +53,7 @@ describe("Tests for basic parsers", () => {
       "Line:1 Col:6 Error parsing identifier\n123 ab|cd\n      ^unexpected |"
     );
   });
-  it.only("pchar works", () => {
+  it("pchar works", () => {
     const parseA = pchar("A");
 
     const result1 = run(parseA)("ABC");
@@ -70,7 +70,7 @@ describe("Tests for basic parsers", () => {
     expect(result3).to.be.instanceOf(Failure);
     expect(result3.val.slice(0, 2)).to.eql(["A", "No more input"]);
   });
-  it.only("andThen works", () => {
+  it("andThen works", () => {
     const parseA = pchar("A");
     const parseB = pchar("B");
     const parseAThenB = andThen(parseA)(parseB);
@@ -538,13 +538,13 @@ describe("Tests for basic parsers", () => {
     const result3 = run(parseAThenB)("AZC");
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql([["A", "B"], "C"]);
+    expect(result1.val[0]).to.eql(["A", "B"]);
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.eql(["A", "Unexpected 'Z'"]);
+    expect(result2.val.slice(0, 2)).to.eql(["A", "Unexpected 'Z'"]);
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val).to.eql(["B", "Unexpected 'Z'"]);
+    expect(result3.val.slice(0, 2)).to.eql(["B", "Unexpected 'Z'"]);
   });
   it("infix bindP works", () => {
     const andThenb = curry((p1, p2) =>
@@ -562,12 +562,12 @@ describe("Tests for basic parsers", () => {
     const result3 = run(parseAThenB)("AZC");
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql([["A", "B"], "C"]);
+    expect(result1.val[0]).to.eql(["A", "B"]);
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.eql(["A", "Unexpected 'Z'"]);
+    expect(result2.val.slice(0, 2)).to.eql(["A", "Unexpected 'Z'"]);
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val).to.eql(["B", "Unexpected 'Z'"]);
+    expect(result3.val.slice(0, 2)).to.eql(["B", "Unexpected 'Z'"]);
   });
 });

@@ -98,6 +98,29 @@ const run = curry((parser, inputStr) =>
   runOnInput(parser, InputState.fromStr(inputStr))
 );
 
+/// "bindP" takes a parser-producing function f, and a parser p
+/// and passes the output of p into f, to create a new parser
+const bindP = curry((f, p) => {
+  const label = "unknown";
+  const innerFn = (input) => {
+    const result1 = runOnInput(p, input);
+    // return error from parser1
+    if (result1 instanceof Failure) {
+      return result1;
+    }
+
+    const [value1, remainingInput] = result1.val;
+    // apply f to get a new parser
+    const p2 = f(value1);
+    // run parser with remaining input
+    return runOnInput(p2, remainingInput);
+  };
+  return Parser.of(innerFn, label);
+});
+Parser.prototype.bindP = function (f) {
+  return bindP(f, this);
+};
+
 // .>>.
 const andThen = curry((parser1, parser2) => {
   const label = `${getLabel(parser1)} andThen ${getLabel(parser2)}`;
@@ -367,29 +390,6 @@ const sepBy = curry((p, sep) => {
   const empty = returnP([]);
   return orElse(s, empty);
 });
-
-/// "bindP" takes a parser-producing function f, and a parser p
-/// and passes the output of p into f, to create a new parser
-const bindP = curry((f, p) => {
-  const label = "unknown";
-  const innerFn = (input) => {
-    const result1 = run(p, input);
-    // return error from parser1
-    if (result1 instanceof Failure) {
-      return result1;
-    }
-
-    const [value1, remainingInput] = result1.val;
-    // apply f to get a new parser
-    const p2 = f(value1);
-    // run parser with remaining input
-    return run(p2, remainingInput);
-  };
-  return Parser.of(innerFn, label);
-});
-Parser.prototype.bindP = function (f) {
-  return bindP(f, this);
-};
 
 module.exports = {
   printResult,
