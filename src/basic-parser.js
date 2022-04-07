@@ -30,7 +30,6 @@ const printResult = (result) => {
   }
 };
 
-
 /// Update the label in the parser
 const setLabel = curry((parser, newLabel) => {
   // change the inner function to use the new label
@@ -83,7 +82,19 @@ const pchar = (charToMatch) => {
   return satisfy(predicate, label);
 };
 
-const run = curry((parser, input) => parser.parser(input));
+// const run = curry((parser, input) => parser.parser(input));
+
+/// Run the parser on a InputState
+const runOnInput = curry((parser, input) =>
+  // call inner function with input
+  parser.parser(input)
+);
+
+/// Run the parser on a string
+const run = curry((parser, inputStr) =>
+  // call inner function with input
+  runOnInput(parser, InputState.fromStr(inputStr))
+);
 
 // .>>.
 const andThen = curry((parser1, parser2) => {
