@@ -107,10 +107,28 @@ Position.of = function (l, c) {
   return new Position(l, c);
 };
 
+/// Define the current input state
+class InputState {
+  constructor(lines, position) {
+    this.lines = lines;
+    this.position = position;
+  }
+  with = {
+    position: (newPosition) => {
+      return InputState.of(this.lines, newPosition)
+    },
+  };
+}
+InputState.of = function (l, p) {
+  return new InputState(l, p);
+};
+
 module.exports = {
   None,
   Some,
   Success,
   Failure,
   Parser,
+  Position,
+  InputState,
 };
