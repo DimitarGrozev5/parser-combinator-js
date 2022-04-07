@@ -25,8 +25,8 @@ Some.of = function (x) {
 };
 //////////////////////////////////Either type
 class Failure {
-  constructor(label, err) {
-    this.val = [label, err];
+  constructor(label, err, pos) {
+    this.val = [label, err, pos];
   }
   map() {
     return this;
@@ -39,8 +39,8 @@ class Failure {
     return `Error parsing ${label}\n${error}`;
   }
 }
-Failure.of = function (label, x) {
-  return new Failure(label, x);
+Failure.of = function (label, x, pos) {
+  return new Failure(label, x, pos);
 };
 
 class Success {
@@ -96,6 +96,17 @@ Parser.of = function (x) {
   return new Parser(x);
 };
 
+class ParserPosition {
+  constructor(currentLine, line, column) {
+    this.currentLine = currentLine;
+    this.line = line;
+    this.column = column;
+  }
+}
+ParserPosition.of = function (currentLine, line, column) {
+  return new ParserPosition(currentLine, line, column);
+};
+
 //////////////////////////////////////////////// Position types
 class Position {
   constructor(line, column) {
@@ -115,7 +126,7 @@ class InputState {
   }
   with = {
     position: (newPosition) => {
-      return InputState.of(this.lines, newPosition)
+      return InputState.of(this.lines, newPosition);
     },
   };
 }
@@ -131,4 +142,5 @@ module.exports = {
   Parser,
   Position,
   InputState,
+  ParserPosition,
 };

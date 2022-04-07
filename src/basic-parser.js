@@ -1,15 +1,35 @@
-const { None, Some, Success, Failure, Parser } = require("./types");
+const {
+  None,
+  Some,
+  Success,
+  Failure,
+  Parser,
+  ParserPosition,
+} = require("./types");
 const { pipe, curry, addFnAsDotToParser } = require("./helpers");
+const InputState = require("./input-state");
+
+const parserPositionFromInputState = (inputState) =>
+  ParserPosition.of(
+    InputState.currentLine(inputState),
+    inputState.position.line,
+    inputState.position.column
+  );
 
 const printResult = (result) => {
   if (result instanceof Success) {
-    const [value, _input] = result.val;
-    return value;
+    return result.val;
   } else if (result instanceof Failure) {
-    const [label, error] = result.val;
-    return `Error parsing ${label}\n${error}`;
+    const [label, error, parserPos] = result.val;
+
+    const errorLine = parserPos.currentLine;
+    const colPos = parserPos.column;
+    const linePos = parserPos.line;
+    const failureCaret = `${Array(colPos).fill(" ").join("")}^${error}`;
+    return `Line:${linePos} Col:${colPos} Error parsing ${label}\n${errorLine}\n${failureCaret}`;
   }
 };
+
 
 /// Update the label in the parser
 const setLabel = curry((parser, newLabel) => {

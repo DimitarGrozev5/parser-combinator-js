@@ -25,11 +25,33 @@ const {
   sepBy,
   bindP,
 } = require("../src/basic-parser");
-const { None, Some, Success, Failure, Parser } = require("../src/types");
+const {
+  None,
+  Some,
+  Success,
+  Failure,
+  Parser,
+  ParserPosition,
+} = require("../src/types");
 const { expect } = require("chai");
 const { curry } = require("../src/helpers");
 
 describe("Tests for basic parsers", () => {
+  it("printResult works", () => {
+    const s = Success.of(5);
+    const result1 = printResult(s);
+    expect(result1).to.equal(5);
+
+    const exampleError = Failure.of(
+      "identifier",
+      "unexpected |",
+      ParserPosition.of("123 ab|cd", 1, 6)
+    );
+    const result2 = printResult(exampleError);
+    expect(result2).to.equal(
+      "Line:1 Col:6 Error parsing identifier\n123 ab|cd\n      ^unexpected |"
+    );
+  });
   it("pchar works", () => {
     const parseA = pchar("A");
 

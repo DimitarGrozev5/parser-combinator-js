@@ -50,7 +50,7 @@ describe("input-state tests", () => {
     expect(inputState3.position).to.be.instanceOf(Position);
     expect(inputState3.position).to.eql({ line: 0, column: 0 });
   });
-  it.only("nextChar works", () => {
+  it("nextChar works", () => {
     const inputStr = "abc\nde";
     let state = fromStr(inputStr);
     let char = "";
@@ -119,13 +119,18 @@ describe("input-state tests", () => {
     expect(char).to.be.instanceOf(None);
   });
   it("readAllChars works", () => {
-    // console.log(readAllChars(fromStr("")));
-    // //=> []
-    // console.log(readAllChars(fromStr("a")));
-    // //=> ['a'; '\010']
-    // console.log(readAllChars(fromStr("ab")));
-    // //=> ['a'; 'b'; '\010']
-    // console.log(readAllChars(fromStr("a\nb")));
+    const result1 = readAllChars(fromStr(""));
+    //=> []
+    const result2 = readAllChars(fromStr("a"));
+    //=> ['a'; '\010']
+    const result3 = readAllChars(fromStr("ab"));
+    //=> ['a'; 'b'; '\010']
+    const result4 = readAllChars(fromStr("a\nb"));
     //=> ['a'; '\010'; 'b'; '\010']
+
+    expect(result1).to.eql([]);
+    expect(result2).to.eql(["a", "\n"]);
+    expect(result3).to.eql(["a", "b", "\n"]);
+    expect(result4).to.eql(["a", "\n", "b", "\n"]);
   });
 });

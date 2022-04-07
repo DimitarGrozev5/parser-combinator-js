@@ -65,13 +65,15 @@ const nextChar = (input) => {
 
 const readAllChars = (input) => {
   const [remainingInput, charOpt] = nextChar(input);
-  if (charOpt instanceof None) {
-    return [];
-  } else {
+  if (charOpt instanceof Some) {
     const ch = charOpt.val;
     return [ch, ...readAllChars(remainingInput)];
+  } else {
+    return [];
   }
 };
+
+
 
 module.exports = {
   initialPos,
