@@ -6,7 +6,7 @@ const {
   Parser,
   ParserPosition,
 } = require("./types");
-const { pipe, curry, addFnAsDotToParser } = require("./helpers");
+const { pipe, curry } = require("./helpers");
 const InputState = require("./input-state");
 
 const parserPositionFromInputState = (inputState) =>
@@ -58,17 +58,21 @@ const getLabel = (parser) =>
 /// Match an input token if the predicate is satisfied
 const satisfy = curry((predicate, label) => {
   const innerFn = (input) => {
-    if (!input) {
-      return Failure.of(label, "No more input");
+    const [remainingInput, charOpt] = InputState.nextChar(input);
+    if (charOpt instanceof None) {
+      const err = "No more input";
+      const pos = parserPositionFromInputState(input);
+
+      return Failure.of(label, err, pos);
     } else {
-      const first = input[0];
+      const first = charOpt.val;
       if (predicate(first)) {
         // <====== use predicate here
-        const remainingInput = input.slice(1);
         return Success.of([first, remainingInput]);
       } else {
         const err = `Unexpected '${first}'`;
-        return Failure.of(label, err);
+        const pos = parserPositionFromInputState(input);
+        return Failure.of(label, err, pos);
       }
     }
   };
@@ -81,8 +85,6 @@ const pchar = (charToMatch) => {
   const label = `${charToMatch}`;
   return satisfy(predicate, label);
 };
-
-// const run = curry((parser, input) => parser.parser(input));
 
 /// Run the parser on a InputState
 const runOnInput = curry((parser, input) =>

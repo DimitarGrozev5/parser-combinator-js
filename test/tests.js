@@ -32,6 +32,7 @@ const {
   Failure,
   Parser,
   ParserPosition,
+  InputState,
 } = require("../src/types");
 const { expect } = require("chai");
 const { curry } = require("../src/helpers");
@@ -56,19 +57,20 @@ describe("Tests for basic parsers", () => {
     const parseA = pchar("A");
 
     const result1 = run(parseA)("ABC");
-    // const result2 = run(parseA)("ZBC");
-    // const result3 = run(parseA)("");
+    const result2 = run(parseA)("ZBC");
+    const result3 = run(parseA)("");
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql(["A", "BC"]);
+    expect(result1.val[0]).to.equal("A");
+    expect(result1.val[1]).to.be.instanceOf(InputState);
 
-    // expect(result2).to.be.instanceOf(Failure);
-    // expect(result2.val).to.eql(["A", "Unexpected 'Z'"]);
+    expect(result2).to.be.instanceOf(Failure);
+    expect(result2.val.slice(0, 2)).to.eql(["A", "Unexpected 'Z'"]);
 
-    // expect(result3).to.be.instanceOf(Failure);
-    // expect(result3.val).to.eql(["A", "No more input"]);
+    expect(result3).to.be.instanceOf(Failure);
+    expect(result3.val.slice(0, 2)).to.eql(["A", "No more input"]);
   });
-  it("andThen works", () => {
+  it.only("andThen works", () => {
     const parseA = pchar("A");
     const parseB = pchar("B");
     const parseAThenB = andThen(parseA)(parseB);

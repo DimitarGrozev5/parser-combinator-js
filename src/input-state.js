@@ -73,13 +73,12 @@ const readAllChars = (input) => {
   }
 };
 
-
-
 module.exports = {
   initialPos,
   incrCol,
   incrLine,
   fromStr,
+  currentLine,
   nextChar,
   readAllChars,
 };
