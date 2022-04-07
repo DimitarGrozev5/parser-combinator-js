@@ -7,7 +7,7 @@ const initialPos = Position.of(0, 0);
 const incrCol = (pos) => Position.of(pos.line, pos.column + 1);
 
 /// increment the line number and set the column to 0
-const incrLine = (pos) => Position.of(pos.line + 1, pos.column);
+const incrLine = (pos) => Position.of(pos.line + 1, 0);
 
 /// Create a new InputState from a string
 const fromStr = (str) => {
@@ -44,7 +44,7 @@ const nextChar = (input) => {
   // 3) if col at line length ->
   //       return NewLine, increment linePos
 
-  if (linePos >= input.lines.Length) {
+  if (linePos >= input.lines.length) {
     return [input, None.of()];
   } else {
     const currentL = currentLine(input);
@@ -73,16 +73,11 @@ const readAllChars = (input) => {
   }
 };
 
-console.log(readAllChars(fromStr("")))
-//=> []
-console.log(readAllChars(fromStr("a")))
-//=> ['a'; '\010']
-console.log(readAllChars(fromStr("ab")))
-//=> ['a'; 'b'; '\010']
-console.log(readAllChars(fromStr("a\nb")))
-//=> ['a'; '\010'; 'b'; '\010']
-
-modules.exports = {
+module.exports = {
+  initialPos,
+  incrCol,
+  incrLine,
   fromStr,
   nextChar,
+  readAllChars,
 };
