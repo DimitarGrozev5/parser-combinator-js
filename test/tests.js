@@ -64,10 +64,46 @@ describe("Tests for basic parsers", () => {
     expect(result3).to.be.instanceOf(Failure);
     expect(result3.val).to.eql(["B", "Unexpected 'Z'"]);
   });
+  it("infix andThen works", () => {
+    const parseA = pchar("A");
+    const parseB = pchar("B");
+    const parseAThenB = parseA.andThen(parseB);
+
+    const result1 = run(parseAThenB)("ABC");
+    const result2 = run(parseAThenB)("ZBC");
+    const result3 = run(parseAThenB)("AZC");
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql([["A", "B"], "C"]);
+
+    expect(result2).to.be.instanceOf(Failure);
+    expect(result2.val).to.eql(["A", "Unexpected 'Z'"]);
+
+    expect(result3).to.be.instanceOf(Failure);
+    expect(result3.val).to.eql(["B", "Unexpected 'Z'"]);
+  });
   it("orElse works", () => {
     const parseA = pchar("A");
     const parseB = pchar("B");
     const parseAOrElseB = orElse(parseA, parseB);
+
+    const result1 = run(parseAOrElseB)("AZZ");
+    const result2 = run(parseAOrElseB)("BZZ");
+    const result3 = run(parseAOrElseB)("CZZ");
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql(["A", "ZZ"]);
+
+    expect(result2).to.be.instanceOf(Success);
+    expect(result2.val).to.eql(["B", "ZZ"]);
+
+    expect(result3).to.be.instanceOf(Failure);
+    expect(result3.val).to.eql(["B", "Unexpected 'C'"]);
+  });
+  it("infix orElse works", () => {
+    const parseA = pchar("A");
+    const parseB = pchar("B");
+    const parseAOrElseB = parseA.orElse(parseB);
 
     const result1 = run(parseAOrElseB)("AZZ");
     const result2 = run(parseAOrElseB)("BZZ");
@@ -146,6 +182,27 @@ describe("Tests for basic parsers", () => {
     expect(result2).to.be.instanceOf(Failure);
     expect(result2.val).to.eql(["any of 1,2,3", "Unexpected 'A'"]);
   });
+  it("pipe in mapP works", () => {
+    const parseDigit = anyOf(["1", "2", "3"]);
+
+    // create a parser that returns a tuple
+    const tupleParser = andThen(andThen(parseDigit, parseDigit), parseDigit);
+
+    // create a function that turns the tuple into a string
+    const transformTuple = ([[c1, c2], c3]) => "" + c1 + c2 + c3;
+
+    // use "map" to combine them
+    const parseThreeDigitsAsStr = tupleParser.pipeInMapP(transformTuple);
+
+    const result1 = run(parseThreeDigitsAsStr, "123A");
+    const result2 = run(parseThreeDigitsAsStr, "12AA");
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql(["123", "A"]);
+
+    expect(result2).to.be.instanceOf(Failure);
+    expect(result2.val).to.eql(["any of 1,2,3", "Unexpected 'A'"]);
+  });
   it("returnP works", () => {
     const testParser = returnP("A");
     expect(testParser).to.be.instanceOf(Parser);
@@ -162,6 +219,20 @@ describe("Tests for basic parsers", () => {
     const p1 = returnP(1);
 
     const result1 = applyP(addP, p1);
+    expect(result1).to.be.instanceOf(Parser);
+
+    const result2 = run(result1, "BC");
+    expect(result2).to.be.instanceOf(Success);
+    expect(result2.val).to.eql([2, "BC"]);
+  });
+  it("infix applyP works", () => {
+    const add = (a) => a + 1;
+    expect(add(1)).to.equal(2);
+
+    const addP = returnP(add);
+    const p1 = returnP(1);
+
+    const result1 = addP.applyP(p1);
     expect(result1).to.be.instanceOf(Parser);
 
     const result2 = run(result1, "BC");
@@ -314,7 +385,10 @@ describe("Tests for basic parsers", () => {
     expect(result4.val).to.eql([1234, ""]);
 
     expect(result5).to.be.instanceOf(Failure);
-    expect(result5.val).to.eql(["any of 0,1,2,3,4,5,6,7,8,9", "Unexpected 'A'"]);
+    expect(result5.val).to.eql([
+      "any of 0,1,2,3,4,5,6,7,8,9",
+      "Unexpected 'A'",
+    ]);
 
     expect(result6).to.be.instanceOf(Success);
     expect(result6.val).to.eql([-123, "C"]);
@@ -344,6 +418,21 @@ describe("Tests for basic parsers", () => {
 
     // use .>> below
     let digitThenSemicolon = andThen1(digit, opt(pchar(";")));
+
+    const result1 = run(digitThenSemicolon, "1;"); // Success ('1', "")
+    const result2 = run(digitThenSemicolon, "1"); // Success ('1', "")
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql(["1", ""]);
+
+    expect(result2).to.be.instanceOf(Success);
+    expect(result2.val).to.eql(["1", ""]);
+  });
+  it("infix andThen1 works", () => {
+    const digit = anyOf(["1"]);
+
+    // use .>> below
+    let digitThenSemicolon = digit.andThen1(opt(pchar(";")));
 
     const result1 = run(digitThenSemicolon, "1;"); // Success ('1', "")
     const result2 = run(digitThenSemicolon, "1"); // Success ('1', "")
@@ -419,6 +508,30 @@ describe("Tests for basic parsers", () => {
     const parseA = pchar("A");
     const parseB = pchar("B");
     const parseAThenB = andThenb(parseA)(parseB);
+
+    const result1 = run(parseAThenB)("ABC");
+    const result2 = run(parseAThenB)("ZBC");
+    const result3 = run(parseAThenB)("AZC");
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val).to.eql([["A", "B"], "C"]);
+
+    expect(result2).to.be.instanceOf(Failure);
+    expect(result2.val).to.eql(["A", "Unexpected 'Z'"]);
+
+    expect(result3).to.be.instanceOf(Failure);
+    expect(result3.val).to.eql(["B", "Unexpected 'Z'"]);
+  });
+  it("infix bindP works", () => {
+    const andThenb = curry((p1, p2) =>
+      p1.bindP((p1Result) =>
+        p2.bindP((p2Result) => returnP([p1Result, p2Result]))
+      )
+    );
+
+    const parseA = pchar("A");
+    const parseB = pchar("B");
+    const parseAThenB = andThenb(parseA, parseB);
 
     const result1 = run(parseAThenB)("ABC");
     const result2 = run(parseAThenB)("ZBC");

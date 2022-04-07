@@ -27,6 +27,9 @@ const setLabel = curry((parser, newLabel) => {
   // return the Parser
   return Parser.of(newInnerFn, newLabel);
 });
+Parser.prototype.setLabel = function (newLabel) {
+  return setLabel(this, newLabel);
+};
 
 /// get the label from a parser
 const getLabel = (parser) =>
@@ -86,7 +89,9 @@ const andThen = curry((parser1, parser2) => {
 
   return Parser.of(innerFn, label);
 });
-// addFnAsDotToParser("andThen", Parser, andThen);
+Parser.prototype.andThen = function (parser2) {
+  return andThen(this, parser2);
+};
 
 // <|>
 const orElse = curry((parser1, parser2) => {
@@ -107,7 +112,9 @@ const orElse = curry((parser1, parser2) => {
 
   return Parser.of(innerFn, label);
 });
-// addFnAsDotToParser("orElse", Parser, orElse);
+Parser.prototype.orElse = function (parser2) {
+  return orElse(this, parser2);
+};
 
 const choice = (listOfParsers) => listOfParsers.reduce(orElse);
 const anyOf = (listOfChars) => {
@@ -136,6 +143,9 @@ const mapP = curry((f, parser) => {
 
   return Parser.of(innerFn);
 });
+Parser.prototype.pipeInMapP = function (f) {
+  return mapP(f, this);
+};
 
 const returnP = (x) => {
   const label = `${x}`;
@@ -154,6 +164,9 @@ const applyP = curry((fP, xP) => {
   // map the pair by applying f to x
   return mapP(([f, x]) => f(x), parser);
 });
+Parser.prototype.applyP = function (xP) {
+  return applyP(this, xP);
+};
 
 const lift2 = curry((f, xP, yP) => applyP(applyP(returnP(f), xP), yP));
 
@@ -279,12 +292,18 @@ const andThen1 = curry((p1, p2) => {
   const pair = andThen(p1, p2);
   return mapP(([a, b]) => a, pair);
 });
+Parser.prototype.andThen1 = function (parser2) {
+  return andThen1(this, parser2);
+};
 
 // >>.
 const andThen2 = curry((p1, p2) => {
   const pair = andThen(p1, p2);
   return mapP(([a, b]) => b, pair);
 });
+Parser.prototype.andThen2 = function (parser2) {
+  return andThen2(this, parser2);
+};
 
 // Return two parsers, diregard whitespace between them
 // let whitespaceChar = anyOf [' '; '\t'; '\n']
@@ -335,6 +354,9 @@ const bindP = curry((f, p) => {
   };
   return Parser.of(innerFn, label);
 });
+Parser.prototype.bindP = function (f) {
+  return bindP(f, this);
+};
 
 module.exports = {
   printResult,

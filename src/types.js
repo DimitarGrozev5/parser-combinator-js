@@ -85,7 +85,7 @@ Success.of = function (x) {
 
 // console.log(result);
 
-//////////////////////////////////////////Parser type
+////////////////////////////////////////// Parser type
 class Parser {
   constructor(parser, label) {
     this.parser = parser;
@@ -94,6 +94,17 @@ class Parser {
 }
 Parser.of = function (x) {
   return new Parser(x);
+};
+
+//////////////////////////////////////////////// Position types
+class Position {
+  constructor(line, column) {
+    this.line = line;
+    this.column = column;
+  }
+}
+Position.of = function (l, c) {
+  return new Position(l, c);
 };
 
 module.exports = {
