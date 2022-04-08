@@ -273,7 +273,7 @@ describe("Tests for basic parsers", () => {
     expect(result2).to.be.instanceOf(Success);
     expect(result2.val[0]).to.eql(2);
   });
-  it.only("applyP works; take 2", () => {
+  it("applyP works; take 2", () => {
     const add = (a) => a + 1;
     expect(add(1)).to.equal(2);
 
