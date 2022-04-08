@@ -237,7 +237,7 @@ describe("Tests for basic parsers", () => {
       "Unexpected 'A'",
     ]);
   });
-  it.only("returnP works", () => {
+  it("returnP works", () => {
     const testParser = returnP("A");
     expect(testParser).to.be.instanceOf(Parser);
 
@@ -245,7 +245,7 @@ describe("Tests for basic parsers", () => {
     expect(parseString).to.be.instanceOf(Success);
     expect(parseString.val[0]).to.eql("A");
   });
-  it.only("applyP works", () => {
+  it("applyP works", () => {
     const add = (a) => a + 1;
     expect(add(1)).to.equal(2);
 
@@ -259,7 +259,7 @@ describe("Tests for basic parsers", () => {
     expect(result2).to.be.instanceOf(Success);
     expect(result2.val[0]).to.eql(2);
   });
-  it.only("infix applyP works", () => {
+  it("infix applyP works", () => {
     const add = (a) => a + 1;
     expect(add(1)).to.equal(2);
 
@@ -273,7 +273,7 @@ describe("Tests for basic parsers", () => {
     expect(result2).to.be.instanceOf(Success);
     expect(result2.val[0]).to.eql(2);
   });
-  it("applyP works; take 2", () => {
+  it.only("applyP works; take 2", () => {
     const add = (a) => a + 1;
     expect(add(1)).to.equal(2);
 
@@ -286,7 +286,7 @@ describe("Tests for basic parsers", () => {
 
     const result2 = run(result1, "BC");
     expect(result2).to.be.instanceOf(Success);
-    expect(result2.val).to.eql([2, "BC"]);
+    expect(result2.val[0]).to.eql(2);
   });
   it("lift2 works", () => {
     const add = curry((a, b) => a + b);
