@@ -427,7 +427,7 @@ describe("Tests for basic parsers", () => {
     expect(result6).to.be.instanceOf(Success);
     expect(result6.val[0]).to.eql(-123);
   });
-  it.only("opt works", () => {
+  it("opt works", () => {
     const digit = anyOf(["1"]);
     const digitThenSemicolon = andThen(digit, opt(pchar(";")));
 
@@ -445,7 +445,7 @@ describe("Tests for basic parsers", () => {
     expect(res2).to.equal("1");
     expect(op2).to.be.instanceOf(None);
   });
-  it("andThen1 works", () => {
+  it.only("andThen1 works", () => {
     const digit = anyOf(["1"]);
 
     // use .>> below
@@ -455,12 +455,12 @@ describe("Tests for basic parsers", () => {
     const result2 = run(digitThenSemicolon, "1"); // Success ('1', "")
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql(["1", ""]);
+    expect(result1.val[0]).to.eql("1");
 
     expect(result2).to.be.instanceOf(Success);
-    expect(result2.val).to.eql(["1", ""]);
+    expect(result2.val[0]).to.eql("1");
   });
-  it("infix andThen1 works", () => {
+  it.only("infix andThen1 works", () => {
     const digit = anyOf(["1"]);
 
     // use .>> below
@@ -470,10 +470,10 @@ describe("Tests for basic parsers", () => {
     const result2 = run(digitThenSemicolon, "1"); // Success ('1', "")
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql(["1", ""]);
+    expect(result1.val[0]).to.eql("1");
 
     expect(result2).to.be.instanceOf(Success);
-    expect(result2.val).to.eql(["1", ""]);
+    expect(result2.val[0]).to.eql("1");
   });
   it("between works", () => {
     const pdoublequote = pchar('"');
