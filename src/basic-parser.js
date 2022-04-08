@@ -81,22 +81,22 @@ const satisfy = curry((predicate, label) => {
 });
 
 const pchar = (charToMatch) => {
-  const predicate = (ch) => ch === charToMatch;
   const label = `${charToMatch}`;
+  const predicate = (ch) => ch === charToMatch;
   return satisfy(predicate, label);
 };
 
 /// Run the parser on a InputState
-const runOnInput = curry((parser, input) =>
+const runOnInput = curry((parser, input) => {
   // call inner function with input
-  parser.parser(input)
-);
+  return parser.parser(input);
+});
 
 /// Run the parser on a string
-const run = curry((parser, inputStr) =>
+const run = curry((parser, inputStr) => {
   // call inner function with input
-  runOnInput(parser, InputState.fromStr(inputStr))
-);
+  return runOnInput(parser, InputState.fromStr(inputStr));
+});
 
 const returnP = (x) => {
   const label = `${x}`;
@@ -166,8 +166,11 @@ const choice = (listOfParsers) => listOfParsers.reduce(orElse);
 const anyOf = (listOfChars) => {
   const label = `any of ${listOfChars}`;
   const c = choice(listOfChars.map((char) => pchar(char)));
-  return setLabel(c, label);
+  return c.setLabel(label);
 };
+
+/// Convert a list of chars to a string
+const charListToStr = (charList) => charList.join("");
 
 // <!>
 // |>>
@@ -192,6 +195,14 @@ const mapP = curry((f, parser) => {
 Parser.prototype.pipeInMapP = function (f) {
   return mapP(f, this);
 };
+
+/// Parses a sequence of zero or more chars with the char parser cp.
+/// It returns the parsed chars as a string.
+const manyChars = (cp) => many(cp).mapP(charListToStr);
+
+/// Parses a sequence of one or more chars with the char parser cp.
+/// It returns the parsed chars as a string.
+let manyChars1 = (cp) => many1(cp).mapP(charListToStr);
 
 // <*>
 const applyP = curry((fP, xP) => {
@@ -294,6 +305,18 @@ const many1 = (parser) => {
   return Parser.of(innerFn, label);
 };
 
+/// parse a whitespace char
+const whitespaceChar = (() => {
+  const predicate = (s) => /\s/.test(s);
+  const label = "whitespace";
+  return satisfy(predicate, label);
+})();
+/// parse zero or more whitespace char
+const spaces = many(whitespaceChar);
+
+/// parse one or more whitespace char
+const spaces1 = many1(whitespaceChar);
+
 // Optional char - zero or one occurence
 const opt = (p) => {
   const some = mapP(Some.of, p);
@@ -375,18 +398,15 @@ module.exports = {
   printResult,
   setLabel,
   getLabel,
-  pchar,
   run,
   andThen,
   orElse,
   choice,
-  anyOf,
   mapP,
   returnP,
   applyP,
   lift2,
   sequence,
-  pstring,
   many,
   many1,
   pint,
@@ -397,4 +417,12 @@ module.exports = {
   sepBy1,
   sepBy,
   bindP,
+  pchar,
+  anyOf,
+  charListToStr,
+  manyChars,
+  manyChars1,
+  pstring,
+  spaces,
+  spaces1,
 };

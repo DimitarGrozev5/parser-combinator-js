@@ -2,18 +2,15 @@ const {
   printResult,
   setLabel,
   getLabel,
-  pchar,
   run,
   andThen,
   orElse,
   choice,
-  anyOf,
   mapP,
   returnP,
   applyP,
   lift2,
   sequence,
-  pstring,
   many,
   many1,
   pint,
@@ -24,6 +21,14 @@ const {
   sepBy1,
   sepBy,
   bindP,
+  pchar,
+  anyOf,
+  charListToStr,
+  manyChars,
+  manyChars1,
+  pstring,
+  spaces,
+  spaces1,
 } = require("../src/basic-parser");
 const {
   None,
@@ -211,7 +216,6 @@ describe("Tests for basic parsers", () => {
       "any of 1,2,3 andThen any of 1,2,3 andThen any of 1,2,3",
       "Unexpected 'A'",
     ]);
-    console.log(printResult(result2));
   });
   it("pipe in mapP works", () => {
     const parseDigit = anyOf(["1", "2", "3"]);
@@ -580,5 +584,23 @@ describe("Tests for basic parsers", () => {
 
     expect(result3).to.be.instanceOf(Failure);
     expect(result3.val.slice(0, 2)).to.eql(["B", "Unexpected 'Z'"]);
+  });
+  it("spaces work", () => {
+    const result1 = run(spaces, " ABC");
+    expect(printResult(result1)[0]).to.eql([" "]);
+    // [' ']
+
+    const result2 = run(spaces, "A");
+    expect(printResult(result2)[0]).to.eql([]);
+    // []
+
+    const result3 = run(spaces1, " ABC");
+    expect(printResult(result3)[0]).to.eql([" "]);
+    // [' ']
+
+    const result4 = run(spaces1, "A");
+    expect(printResult(result4)).to.eql(
+      "Line:0 Col:0 Error parsing whitespace\nA\n^Unexpected 'A'"
+    );
   });
 });
