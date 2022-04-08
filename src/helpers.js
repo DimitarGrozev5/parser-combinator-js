@@ -21,6 +21,8 @@ const curry = (fn) => {
   return given([]);
 };
 
+const exp = (e) => e();
+
 // Doesn't work
 const addFnAsDotToParser = (label, object, fn) => {
   object.prototype[label] = function (...args) {
@@ -29,4 +31,4 @@ const addFnAsDotToParser = (label, object, fn) => {
   };
 };
 
-module.exports = { pipe, curry, addFnAsDotToParser };
+module.exports = { pipe, curry, addFnAsDotToParser, exp };
