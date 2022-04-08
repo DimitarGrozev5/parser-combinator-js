@@ -325,7 +325,7 @@ describe("Tests for basic parsers", () => {
     expect(result3).to.be.instanceOf(Failure);
     expect(result3.val.slice(0, 2)).to.eql(["ABC", "Unexpected '|'"]);
   });
-  it.only("many works", () => {
+  it("many works", () => {
     const manyA = many(pchar("A"));
 
     // test some success cases
@@ -348,7 +348,7 @@ describe("Tests for basic parsers", () => {
     expect(result4).to.be.instanceOf(Success);
     expect(result4.val[0]).to.eql([]);
   });
-  it.only("many works; take 2", () => {
+  it("many works; take 2", () => {
     const manyAB = many(pstring("AB"));
 
     const result1 = run(manyAB, "ABCD"); // Success (["AB"], "CD")
@@ -368,7 +368,7 @@ describe("Tests for basic parsers", () => {
     expect(result4).to.be.instanceOf(Success);
     expect(result4.val[0]).to.eql([]);
   });
-  it("many1 works", () => {
+  it.only("many1 works", () => {
     // define parser for one digit
     const digit = anyOf(["1", "2", "3", "4"]);
 
@@ -383,19 +383,19 @@ describe("Tests for basic parsers", () => {
     const result5 = run(digits, "ABC"); // Failure "Expecting '9'. Got 'A'"
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql([["1"], "ABC"]);
+    expect(result1.val[0]).to.eql(["1"]);
 
     expect(result2).to.be.instanceOf(Success);
-    expect(result2.val).to.eql([["1", "2"], "BC"]);
+    expect(result2.val[0]).to.eql(["1", "2"]);
 
     expect(result3).to.be.instanceOf(Success);
-    expect(result3.val).to.eql([["1", "2", "3"], "C"]);
+    expect(result3.val[0]).to.eql(["1", "2", "3"]);
 
     expect(result4).to.be.instanceOf(Success);
-    expect(result4.val).to.eql([["1", "2", "3", "4"], ""]);
+    expect(result4.val[0]).to.eql(["1", "2", "3", "4"]);
 
     expect(result5).to.be.instanceOf(Failure);
-    expect(result5.val).to.eql(["any of 1,2,3,4", "Unexpected 'A'"]);
+    expect(result5.val.slice(0, 2)).to.eql(["any of 1,2,3,4", "Unexpected 'A'"]);
   });
   it("pint works", () => {
     const result1 = run(pint, "1ABC"); // Success (1, "ABC")
