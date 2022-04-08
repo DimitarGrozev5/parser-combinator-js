@@ -288,7 +288,7 @@ describe("Tests for basic parsers", () => {
     expect(result2).to.be.instanceOf(Success);
     expect(result2.val[0]).to.eql(2);
   });
-  it.only("lift2 works", () => {
+  it("lift2 works", () => {
     const add = curry((a, b) => a + b);
     expect(add(2, 2)).to.equal(4);
 
@@ -300,7 +300,7 @@ describe("Tests for basic parsers", () => {
     expect(result1).to.be.instanceOf(Success);
     expect(result1.val[0]).to.eql(4);
   });
-  it.only("sequence works", () => {
+  it("sequence works", () => {
     const parsers = [pchar("A"), pchar("B"), pchar("C")];
     let combined = sequence(parsers);
 
@@ -309,21 +309,21 @@ describe("Tests for basic parsers", () => {
     expect(result).to.be.instanceOf(Success);
     expect(result.val[0]).to.eql(["A", "B", "C"]);
   });
-  it("pstring works", () => {
-    const parseABC = pstring("ABC");
+  it.only("pstring works", () => {
+    const parseABC = pstring("ABC").setLabel("ABC");
 
     const result1 = run(parseABC, "ABCDE"); // Success ("ABC", "DE")
     const result2 = run(parseABC, "A|CDE"); // Failure "Expecting 'B'. Got '|'"
     const result3 = run(parseABC, "AB|DE"); // Failure "Expecting 'C'. Got '|'"
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql(["ABC", "DE"]);
+    expect(result1.val[0]).to.eql("ABC");
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.eql(["B", "Unexpected '|'"]);
+    expect(result2.val.slice(0, 2)).to.eql(["ABC", "Unexpected '|'"]);
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val).to.eql(["C", "Unexpected '|'"]);
+    expect(result3.val.slice(0, 2)).to.eql(["ABC", "Unexpected '|'"]);
   });
   it("many works", () => {
     const manyA = many(pchar("A"));
