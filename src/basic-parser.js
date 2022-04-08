@@ -192,17 +192,9 @@ const mapP = curry((f, parser) => {
 
   return Parser.of(innerFn);
 });
-Parser.prototype.pipeInMapP = function (f) {
+Parser.prototype.mapP = function (f) {
   return mapP(f, this);
 };
-
-/// Parses a sequence of zero or more chars with the char parser cp.
-/// It returns the parsed chars as a string.
-const manyChars = (cp) => many(cp).mapP(charListToStr);
-
-/// Parses a sequence of one or more chars with the char parser cp.
-/// It returns the parsed chars as a string.
-let manyChars1 = (cp) => many1(cp).mapP(charListToStr);
 
 // <*>
 const applyP = curry((fP, xP) => {
@@ -305,6 +297,14 @@ const many1 = (parser) => {
   return Parser.of(innerFn, label);
 };
 
+/// Parses a sequence of zero or more chars with the char parser cp.
+/// It returns the parsed chars as a string.
+const manyChars = (cp) => many(cp).mapP(charListToStr);
+
+/// Parses a sequence of one or more chars with the char parser cp.
+/// It returns the parsed chars as a string.
+let manyChars1 = (cp) => many1(cp).mapP(charListToStr);
+
 /// parse a whitespace char
 const whitespaceChar = (() => {
   const predicate = (s) => /\s/.test(s);
@@ -323,28 +323,6 @@ const opt = (p) => {
   const none = returnP(None.of());
   return orElse(some, none);
 };
-
-const pint = (() => {
-  // helper
-  const resultToInt = ([sign, charList]) => {
-    let i = +charList.join("");
-    if (sign instanceof Some) {
-      return -1 * i;
-    } else {
-      return i;
-    }
-  };
-
-  // define parser for one digit
-  const digit = anyOf(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
-
-  // define parser for one or more digits
-  const digits = many1(digit);
-
-  // parse and convert
-  const minusAndDigits = andThen(opt(pchar("-")), digits);
-  return mapP(resultToInt, minusAndDigits).setLabel("Integer");
-})();
 
 // .>>
 const andThen1 = curry((p1, p2) => {
@@ -394,6 +372,66 @@ const sepBy = curry((p, sep) => {
   return orElse(s, empty);
 });
 
+/// parse a digit
+const digitChar = (() => {
+  const predicate = (s) => /[0-9]/.test(s);
+  const label = "digit";
+  return satisfy(predicate, label);
+})();
+
+// parse an integer
+const pint = (() => {
+  const label = "integer";
+
+  // helper
+  const resultToInt = ([sign, digits]) => {
+    const i = +digits; // ignore int overflow for now
+    if (sign instanceof Some) {
+      return -1 * i;
+    } else {
+      return i;
+    }
+  };
+
+  // define parser for one or more digits
+  const digits = manyChars1(digitChar);
+
+  // an "int" is optional sign + one or more digits
+  return opt(pchar("-")).andThen(digits).mapP(resultToInt).setLabel(label);
+  // opt (pchar '-') .>>. digits
+  // |> mapP resultToInt
+  // <?> label
+})();
+
+// parse a float
+const pfloat = (() => {
+  const label = "float";
+
+  // helper
+  const resultToFloat = ([[[sign, digits1], point], digits2]) => {
+    const f1 = parseFloat(`${digits1}.${digits2}`);
+    if (sign instanceof Some) {
+      return -1 * f1;
+    } else {
+      return f1;
+    }
+  };
+
+  // define parser for one or more digits
+  const digits = manyChars1(digitChar);
+
+  // a float is sign, digits, point, digits (ignore exponents for now)
+  return opt(pchar("-"))
+    .andThen(digits)
+    .andThen(pchar("."))
+    .andThen(digits)
+    .mapP(resultToFloat)
+    .setLabel(label);
+  // opt (pchar '-') .>>. digits .>>. pchar '.' .>>. digits
+  // |> mapP resultToFloat
+  // <?> label
+})();
+
 module.exports = {
   printResult,
   setLabel,
@@ -425,4 +463,5 @@ module.exports = {
   pstring,
   spaces,
   spaces1,
+  pfloat,
 };

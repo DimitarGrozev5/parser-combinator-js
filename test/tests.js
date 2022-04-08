@@ -29,6 +29,7 @@ const {
   pstring,
   spaces,
   spaces1,
+  pfloat,
 } = require("../src/basic-parser");
 const {
   None,
@@ -227,7 +228,7 @@ describe("Tests for basic parsers", () => {
     const transformTuple = ([[c1, c2], c3]) => "" + c1 + c2 + c3;
 
     // use "map" to combine them
-    const parseThreeDigitsAsStr = tupleParser.pipeInMapP(transformTuple);
+    const parseThreeDigitsAsStr = tupleParser.mapP(transformTuple);
 
     const result1 = run(parseThreeDigitsAsStr, "123A");
     const result2 = run(parseThreeDigitsAsStr, "12AA");
@@ -426,7 +427,7 @@ describe("Tests for basic parsers", () => {
     expect(result4.val[0]).to.eql(1234);
 
     expect(result5).to.be.instanceOf(Failure);
-    expect(result5.val.slice(0, 2)).to.eql(["Integer", "Unexpected 'A'"]);
+    expect(result5.val.slice(0, 2)).to.eql(["integer", "Unexpected 'A'"]);
 
     expect(result6).to.be.instanceOf(Success);
     expect(result6.val[0]).to.eql(-123);
@@ -602,5 +603,32 @@ describe("Tests for basic parsers", () => {
     expect(printResult(result4)).to.eql(
       "Line:0 Col:0 Error parsing whitespace\nA\n^Unexpected 'A'"
     );
+  });
+  it("pfloat works", () => {
+    const result1 = run(pfloat, "1.1ABC"); // Success (1, "ABC")
+    const result2 = run(pfloat, "12.23BC"); // Success (12, "BC")
+    const result3 = run(pfloat, "123.4C"); // Success (123, "C")
+    const result4 = run(pfloat, "1234.56"); // Success (1234, "")
+    const result5 = run(pfloat, "ABC"); // Failure "Expecting '9'. Got 'A'"
+
+    const result6 = run(pfloat, "-123.4C"); // Success (123, "C")
+
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val[0]).to.eql(1.1);
+
+    expect(result2).to.be.instanceOf(Success);
+    expect(result2.val[0]).to.eql(12.23);
+
+    expect(result3).to.be.instanceOf(Success);
+    expect(result3.val[0]).to.eql(123.4);
+
+    expect(result4).to.be.instanceOf(Success);
+    expect(result4.val[0]).to.eql(1234.56);
+
+    expect(result5).to.be.instanceOf(Failure);
+    expect(result5.val.slice(0, 2)).to.eql(["float", "Unexpected 'A'"]);
+
+    expect(result6).to.be.instanceOf(Success);
+    expect(result6.val[0]).to.eql(-123.4);
   });
 });
