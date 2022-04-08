@@ -154,8 +154,6 @@ const orElse = curry((parser1, parser2) => {
       const result2 = runOnInput(parser2)(input);
       return result2;
     }
-
-    return Failure.of("Invalid input function");
   };
 
   return Parser.of(innerFn, label);
@@ -176,7 +174,7 @@ const anyOf = (listOfChars) => {
 const mapP = curry((f, parser) => {
   const innerFn = (input) => {
     // run parser with the input
-    const result = run(parser, input);
+    const result = runOnInput(parser, input);
 
     // test the result for Failure/Success
     if (result instanceof Success) {

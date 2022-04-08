@@ -168,7 +168,7 @@ describe("Tests for basic parsers", () => {
     expect(result4).to.be.instanceOf(Failure);
     expect(result4.val.slice(0, 2)).to.eql(["C", "Unexpected 'Z'"]);
   });
-  it.only("anyOf works", () => {
+  it("anyOf works", () => {
     const parceABOrC = anyOf(["A", "B", "C"]);
 
     const result1 = run(parceABOrC)("AZZ");
@@ -204,10 +204,14 @@ describe("Tests for basic parsers", () => {
     const result2 = run(parseThreeDigitsAsStr, "12AA");
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql(["123", "A"]);
+    expect(result1.val[0]).to.eql("123");
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.eql(["any of 1,2,3", "Unexpected 'A'"]);
+    expect(result2.val.slice(0, 2)).to.eql([
+      "any of 1,2,3 andThen any of 1,2,3 andThen any of 1,2,3",
+      "Unexpected 'A'",
+    ]);
+    console.log(printResult(result2));
   });
   it("pipe in mapP works", () => {
     const parseDigit = anyOf(["1", "2", "3"]);
@@ -225,10 +229,13 @@ describe("Tests for basic parsers", () => {
     const result2 = run(parseThreeDigitsAsStr, "12AA");
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql(["123", "A"]);
+    expect(result1.val[0]).to.eql("123");
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.eql(["any of 1,2,3", "Unexpected 'A'"]);
+    expect(result2.val.slice(0, 2)).to.eql([
+      "any of 1,2,3 andThen any of 1,2,3 andThen any of 1,2,3",
+      "Unexpected 'A'",
+    ]);
   });
   it("returnP works", () => {
     const testParser = returnP("A");
