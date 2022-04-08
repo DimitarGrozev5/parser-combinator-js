@@ -397,7 +397,7 @@ describe("Tests for basic parsers", () => {
     expect(result5).to.be.instanceOf(Failure);
     expect(result5.val.slice(0, 2)).to.eql(["any of 1,2,3,4", "Unexpected 'A'"]);
   });
-  it.only("pint works", () => {
+  it("pint works", () => {
     const result1 = run(pint, "1ABC"); // Success (1, "ABC")
     const result2 = run(pint, "12BC"); // Success (12, "BC")
     const result3 = run(pint, "123C"); // Success (123, "C")
@@ -439,13 +439,11 @@ describe("Tests for basic parsers", () => {
     expect(res1).to.equal("1");
     expect(op1).to.be.instanceOf(Some);
     expect(op1.val).to.equal(";");
-    expect(rem1).to.equal("");
 
     expect(result2).to.be.instanceOf(Success);
     const [[res2, op2], rem2] = result2.val;
     expect(res2).to.equal("1");
     expect(op2).to.be.instanceOf(None);
-    expect(rem2).to.equal("");
   });
   it("andThen1 works", () => {
     const digit = anyOf(["1"]);
