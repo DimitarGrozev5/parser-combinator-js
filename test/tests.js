@@ -395,7 +395,10 @@ describe("Tests for basic parsers", () => {
     expect(result4.val[0]).to.eql(["1", "2", "3", "4"]);
 
     expect(result5).to.be.instanceOf(Failure);
-    expect(result5.val.slice(0, 2)).to.eql(["any of 1,2,3,4", "Unexpected 'A'"]);
+    expect(result5.val.slice(0, 2)).to.eql([
+      "any of 1,2,3,4",
+      "Unexpected 'A'",
+    ]);
   });
   it("pint works", () => {
     const result1 = run(pint, "1ABC"); // Success (1, "ABC")
@@ -419,10 +422,7 @@ describe("Tests for basic parsers", () => {
     expect(result4.val[0]).to.eql(1234);
 
     expect(result5).to.be.instanceOf(Failure);
-    expect(result5.val.slice(0, 2)).to.eql([
-      "Integer",
-      "Unexpected 'A'",
-    ]);
+    expect(result5.val.slice(0, 2)).to.eql(["Integer", "Unexpected 'A'"]);
 
     expect(result6).to.be.instanceOf(Success);
     expect(result6.val[0]).to.eql(-123);
@@ -445,7 +445,7 @@ describe("Tests for basic parsers", () => {
     expect(res2).to.equal("1");
     expect(op2).to.be.instanceOf(None);
   });
-  it.only("andThen1 works", () => {
+  it("andThen1 works", () => {
     const digit = anyOf(["1"]);
 
     // use .>> below
@@ -460,7 +460,7 @@ describe("Tests for basic parsers", () => {
     expect(result2).to.be.instanceOf(Success);
     expect(result2.val[0]).to.eql("1");
   });
-  it.only("infix andThen1 works", () => {
+  it("infix andThen1 works", () => {
     const digit = anyOf(["1"]);
 
     // use .>> below
@@ -475,7 +475,7 @@ describe("Tests for basic parsers", () => {
     expect(result2).to.be.instanceOf(Success);
     expect(result2.val[0]).to.eql("1");
   });
-  it("between works", () => {
+  it.only("between works", () => {
     const pdoublequote = pchar('"');
     const quotedInteger = between(pdoublequote, pint, pdoublequote);
 
@@ -483,10 +483,10 @@ describe("Tests for basic parsers", () => {
     const result2 = run(quotedInteger, "1234"); // Failure "Expecting '"'. Got '1'"
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql([1234, ""]);
+    expect(result1.val[0]).to.eql(1234);
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.eql([`"`, "Unexpected '1'"]);
+    expect(result2.val.slice(0, 2)).to.eql(['between ""', "Unexpected '1'"]);
   });
   it("sepBy1, sepBy work", () => {
     const comma = pchar(",");

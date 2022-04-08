@@ -354,7 +354,7 @@ Parser.prototype.andThen2 = function (parser2) {
 // Keep only the result of the middle parser
 const between = curry((p1, p2, p3) => {
   const p12 = andThen2(p1, p2);
-  return andThen1(p12, p3);
+  return andThen1(p12, p3).setLabel(`between ${getLabel(p1)}${getLabel(p1)}`);
 });
 
 /// Parses one or more occurrences of p separated by sep
