@@ -237,7 +237,7 @@ const pstring = (str) =>
 // Function that matches a Parser zero or more times
 const parseZeroOrMore = curry((parser, input) => {
   // run parser with the input
-  const firstResult = run(parser, input);
+  const firstResult = runOnInput(parser, input);
   // test the result for Failure/Success
   if (firstResult instanceof Failure) {
     // if parse fails, return empty list
@@ -277,7 +277,7 @@ const many1 = (parser) => {
   let label = `many ${getLabel(parser)}`;
   const innerFn = (input) => {
     // run parser with the input
-    const firstResult = run(parser, input);
+    const firstResult = runOnInput(parser, input);
     // test the result for Failure/Success
     if (firstResult instanceof Failure) {
       return firstResult;
