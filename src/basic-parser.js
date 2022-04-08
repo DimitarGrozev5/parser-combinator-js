@@ -320,7 +320,7 @@ const pint = (() => {
 
   // parse and convert
   const minusAndDigits = andThen(opt(pchar("-")), digits);
-  return mapP(resultToInt, minusAndDigits);
+  return mapP(resultToInt, minusAndDigits).setLabel("Integer");
 })();
 
 // .>>

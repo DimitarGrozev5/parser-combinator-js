@@ -368,7 +368,7 @@ describe("Tests for basic parsers", () => {
     expect(result4).to.be.instanceOf(Success);
     expect(result4.val[0]).to.eql([]);
   });
-  it.only("many1 works", () => {
+  it("many1 works", () => {
     // define parser for one digit
     const digit = anyOf(["1", "2", "3", "4"]);
 
@@ -397,7 +397,7 @@ describe("Tests for basic parsers", () => {
     expect(result5).to.be.instanceOf(Failure);
     expect(result5.val.slice(0, 2)).to.eql(["any of 1,2,3,4", "Unexpected 'A'"]);
   });
-  it("pint works", () => {
+  it.only("pint works", () => {
     const result1 = run(pint, "1ABC"); // Success (1, "ABC")
     const result2 = run(pint, "12BC"); // Success (12, "BC")
     const result3 = run(pint, "123C"); // Success (123, "C")
@@ -407,27 +407,27 @@ describe("Tests for basic parsers", () => {
     const result6 = run(pint, "-123C"); // Success (123, "C")
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql([1, "ABC"]);
+    expect(result1.val[0]).to.eql(1);
 
     expect(result2).to.be.instanceOf(Success);
-    expect(result2.val).to.eql([12, "BC"]);
+    expect(result2.val[0]).to.eql(12);
 
     expect(result3).to.be.instanceOf(Success);
-    expect(result3.val).to.eql([123, "C"]);
+    expect(result3.val[0]).to.eql(123);
 
     expect(result4).to.be.instanceOf(Success);
-    expect(result4.val).to.eql([1234, ""]);
+    expect(result4.val[0]).to.eql(1234);
 
     expect(result5).to.be.instanceOf(Failure);
-    expect(result5.val).to.eql([
-      "any of 0,1,2,3,4,5,6,7,8,9",
+    expect(result5.val.slice(0, 2)).to.eql([
+      "Integer",
       "Unexpected 'A'",
     ]);
 
     expect(result6).to.be.instanceOf(Success);
-    expect(result6.val).to.eql([-123, "C"]);
+    expect(result6.val[0]).to.eql(-123);
   });
-  it("opt works", () => {
+  it.only("opt works", () => {
     const digit = anyOf(["1"]);
     const digitThenSemicolon = andThen(digit, opt(pchar(";")));
 
