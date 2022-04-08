@@ -359,7 +359,7 @@ const between = curry((p1, p2, p3) => {
 
 /// Parses one or more occurrences of p separated by sep
 const sepBy1 = curry((p, sep) => {
-  const sepThenP = andThen2(sep, p);
+  const sepThenP = andThen2(sep, p).setLabel(getLabel(p));
   const pAndMany = andThen(p, many(sepThenP));
   return mapP(([p, pList]) => [p, ...pList], pAndMany);
 });

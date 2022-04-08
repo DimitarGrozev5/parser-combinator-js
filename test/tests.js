@@ -475,7 +475,7 @@ describe("Tests for basic parsers", () => {
     expect(result2).to.be.instanceOf(Success);
     expect(result2.val[0]).to.eql("1");
   });
-  it.only("between works", () => {
+  it("between works", () => {
     const pdoublequote = pchar('"');
     const quotedInteger = between(pdoublequote, pint, pdoublequote);
 
@@ -488,7 +488,7 @@ describe("Tests for basic parsers", () => {
     expect(result2).to.be.instanceOf(Failure);
     expect(result2.val.slice(0, 2)).to.eql(['between ""', "Unexpected '1'"]);
   });
-  it("sepBy1, sepBy work", () => {
+  it.only("sepBy1, sepBy work", () => {
     const comma = pchar(",");
     const digit = anyOf(["1", "2", "3"]);
 
@@ -506,28 +506,31 @@ describe("Tests for basic parsers", () => {
     const result8 = run(zeroOrMoreDigitList, "Z;"); // Success ([], "Z;")
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql([["1"], ";"]);
+    expect(result1.val[0]).to.eql(["1"]);
 
     expect(result2).to.be.instanceOf(Success);
-    expect(result2.val).to.eql([["1", "2"], ";"]);
+    expect(result2.val[0]).to.eql(["1", "2"]);
 
     expect(result3).to.be.instanceOf(Success);
-    expect(result3.val).to.eql([["1", "2", "3"], ";"]);
+    expect(result3.val[0]).to.eql(["1", "2", "3"]);
 
     expect(result4).to.be.instanceOf(Failure);
-    expect(result4.val).to.eql(["any of 1,2,3", "Unexpected 'Z'"]);
+    expect(result4.val.slice(0, 2)).to.eql([
+      "any of 1,2,3 andThen zero or many any of 1,2,3",
+      "Unexpected 'Z'",
+    ]);
 
     expect(result5).to.be.instanceOf(Success);
-    expect(result5.val).to.eql([["1"], ";"]);
+    expect(result5.val[0]).to.eql(["1"]);
 
     expect(result6).to.be.instanceOf(Success);
-    expect(result6.val).to.eql([["1", "2"], ";"]);
+    expect(result6.val[0]).to.eql(["1", "2"]);
 
     expect(result7).to.be.instanceOf(Success);
-    expect(result7.val).to.eql([["1", "2", "3"], ";"]);
+    expect(result7.val[0]).to.eql(["1", "2", "3"]);
 
     expect(result8).to.be.instanceOf(Success);
-    expect(result8.val).to.eql([[], "Z;"]);
+    expect(result8.val[0]).to.eql([]);
   });
   it("bindP works", () => {
     const andThenb = curry((p1, p2) => {
