@@ -177,16 +177,16 @@ describe("Tests for basic parsers", () => {
     const result4 = run(parceABOrC)("ZZZ");
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql(["A", "ZZ"]);
+    expect(result1.val[0]).to.eql("A");
 
     expect(result2).to.be.instanceOf(Success);
-    expect(result2.val).to.eql(["B", "ZZ"]);
+    expect(result2.val[0]).to.eql("B");
 
     expect(result3).to.be.instanceOf(Success);
-    expect(result3.val).to.eql(["C", "ZZ"]);
+    expect(result3.val[0]).to.eql("C");
 
     expect(result4).to.be.instanceOf(Failure);
-    expect(result4.val).to.eql(["any of A,B,C", "Unexpected 'Z'"]);
+    expect(result4.val.slice(0, 2)).to.eql(["any of A,B,C", "Unexpected 'Z'"]);
   });
   it("mapP works", () => {
     const parseDigit = anyOf(["1", "2", "3"]);
