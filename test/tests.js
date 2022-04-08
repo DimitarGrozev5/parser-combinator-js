@@ -104,10 +104,10 @@ describe("Tests for basic parsers", () => {
     expect(result1.val[0]).to.eql(["A", "B"]);
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val.slice(0, 2)).to.eql(["A", "Unexpected 'Z'"]);
+    expect(result2.val.slice(0, 2)).to.eql(["A andThen B", "Unexpected 'Z'"]);
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val.slice(0, 2)).to.eql(["B", "Unexpected 'Z'"]);
+    expect(result3.val.slice(0, 2)).to.eql(["A andThen B", "Unexpected 'Z'"]);
   });
   it("orElse works", () => {
     const parseA = pchar("A");
@@ -488,7 +488,7 @@ describe("Tests for basic parsers", () => {
     expect(result2).to.be.instanceOf(Failure);
     expect(result2.val.slice(0, 2)).to.eql(['between ""', "Unexpected '1'"]);
   });
-  it.only("sepBy1, sepBy work", () => {
+  it("sepBy1, sepBy work", () => {
     const comma = pchar(",");
     const digit = anyOf(["1", "2", "3"]);
 
