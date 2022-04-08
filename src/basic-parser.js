@@ -39,8 +39,8 @@ const setLabel = curry((parser, newLabel) => {
       return result;
     } else {
       // if Failure, return new label
-      const [oldLabel, err] = result.val;
-      return Failure.of(newLabel, err);
+      const [oldLabel, err, pos] = result.val;
+      return Failure.of(newLabel, err, pos);
     }
   };
   // return the Parser
@@ -98,6 +98,16 @@ const run = curry((parser, inputStr) =>
   runOnInput(parser, InputState.fromStr(inputStr))
 );
 
+const returnP = (x) => {
+  const label = `${x}`;
+  const innerFn = (input) => {
+    // ignore the input and return x
+    return Success.of([x, input]);
+  };
+  // return the inner function
+  return Parser.of(innerFn, label);
+};
+
 /// "bindP" takes a parser-producing function f, and a parser p
 /// and passes the output of p into f, to create a new parser
 const bindP = curry((f, p) => {
@@ -122,29 +132,11 @@ Parser.prototype.bindP = function (f) {
 };
 
 // .>>.
-const andThen = curry((parser1, parser2) => {
-  const label = `${getLabel(parser1)} andThen ${getLabel(parser2)}`;
-  const innerFn = (input) => {
-    const result1 = run(parser1)(input);
-    if (result1 instanceof Failure) {
-      return result1;
-    }
-
-    if (result1 instanceof Success) {
-      const result2 = run(parser2)(result1.val[1]);
-
-      if (result2 instanceof Failure) {
-        return result2;
-      }
-      if (result2 instanceof Success) {
-        const newValue = [result1.val[0], result2.val[0]];
-        return Success.of([newValue, result2.val[1]]);
-      }
-    }
-  };
-
-  return Parser.of(innerFn, label);
-});
+const andThen = curry((p1, p2) =>
+  p1
+    .bindP((p1Result) => p2.bindP((p2Result) => returnP([p1Result, p2Result])))
+    .setLabel(`${getLabel(p1)} andThen ${getLabel(p2)}`)
+);
 Parser.prototype.andThen = function (parser2) {
   return andThen(this, parser2);
 };
@@ -153,13 +145,13 @@ Parser.prototype.andThen = function (parser2) {
 const orElse = curry((parser1, parser2) => {
   const label = `${getLabel(parser1)} orElse ${getLabel(parser2)}`;
   const innerFn = (input) => {
-    const result1 = run(parser1)(input);
+    const result1 = runOnInput(parser1)(input);
     if (result1 instanceof Success) {
       return result1;
     }
 
     if (result1 instanceof Failure) {
-      const result2 = run(parser2)(input);
+      const result2 = runOnInput(parser2)(input);
       return result2;
     }
 
@@ -201,16 +193,6 @@ const mapP = curry((f, parser) => {
 });
 Parser.prototype.pipeInMapP = function (f) {
   return mapP(f, this);
-};
-
-const returnP = (x) => {
-  const label = `${x}`;
-  const innerFn = (input) => {
-    // ignore the input and return x
-    return Success.of([x, input]);
-  };
-  // return the inner function
-  return Parser.of(innerFn, label);
 };
 
 // <*>

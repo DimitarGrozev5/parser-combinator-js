@@ -66,6 +66,9 @@ describe("Tests for basic parsers", () => {
 
     expect(result2).to.be.instanceOf(Failure);
     expect(result2.val.slice(0, 2)).to.eql(["A", "Unexpected 'Z'"]);
+    expect(printResult(result2)).to.equal(
+      "Line:0 Col:0 Error parsing A\nZBC\n^Unexpected 'Z'"
+    );
 
     expect(result3).to.be.instanceOf(Failure);
     expect(result3.val.slice(0, 2)).to.eql(["A", "No more input"]);
@@ -80,13 +83,13 @@ describe("Tests for basic parsers", () => {
     const result3 = run(parseAThenB)("AZC");
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql([["A", "B"], "C"]);
+    expect(result1.val[0]).to.eql(["A", "B"]);
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.eql(["A", "Unexpected 'Z'"]);
+    expect(result2.val.slice(0, 2)).to.eql(["A andThen B", "Unexpected 'Z'"]);
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val).to.eql(["B", "Unexpected 'Z'"]);
+    expect(result3.val.slice(0, 2)).to.eql(["A andThen B", "Unexpected 'Z'"]);
   });
   it("infix andThen works", () => {
     const parseA = pchar("A");
@@ -98,13 +101,13 @@ describe("Tests for basic parsers", () => {
     const result3 = run(parseAThenB)("AZC");
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql([["A", "B"], "C"]);
+    expect(result1.val[0]).to.eql(["A", "B"]);
 
     expect(result2).to.be.instanceOf(Failure);
-    expect(result2.val).to.eql(["A", "Unexpected 'Z'"]);
+    expect(result2.val.slice(0, 2)).to.eql(["A", "Unexpected 'Z'"]);
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val).to.eql(["B", "Unexpected 'Z'"]);
+    expect(result3.val.slice(0, 2)).to.eql(["B", "Unexpected 'Z'"]);
   });
   it("orElse works", () => {
     const parseA = pchar("A");
@@ -116,13 +119,13 @@ describe("Tests for basic parsers", () => {
     const result3 = run(parseAOrElseB)("CZZ");
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql(["A", "ZZ"]);
+    expect(result1.val[0]).to.eql("A");
 
     expect(result2).to.be.instanceOf(Success);
-    expect(result2.val).to.eql(["B", "ZZ"]);
+    expect(result2.val[0]).to.eql("B");
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val).to.eql(["B", "Unexpected 'C'"]);
+    expect(result3.val.slice(0, 2)).to.eql(["B", "Unexpected 'C'"]);
   });
   it("infix orElse works", () => {
     const parseA = pchar("A");
@@ -134,13 +137,13 @@ describe("Tests for basic parsers", () => {
     const result3 = run(parseAOrElseB)("CZZ");
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql(["A", "ZZ"]);
+    expect(result1.val[0]).to.eql("A");
 
     expect(result2).to.be.instanceOf(Success);
-    expect(result2.val).to.eql(["B", "ZZ"]);
+    expect(result2.val[0]).to.eql("B");
 
     expect(result3).to.be.instanceOf(Failure);
-    expect(result3.val).to.eql(["B", "Unexpected 'C'"]);
+    expect(result3.val.slice(0, 2)).to.eql(["B", "Unexpected 'C'"]);
   });
   it("choice works", () => {
     const parseA = pchar("A");
@@ -154,18 +157,18 @@ describe("Tests for basic parsers", () => {
     const result4 = run(parseABOrC)("ZZZ");
 
     expect(result1).to.be.instanceOf(Success);
-    expect(result1.val).to.eql(["A", "ZZ"]);
+    expect(result1.val[0]).to.eql("A");
 
     expect(result2).to.be.instanceOf(Success);
-    expect(result2.val).to.eql(["B", "ZZ"]);
+    expect(result2.val[0]).to.eql("B");
 
     expect(result3).to.be.instanceOf(Success);
-    expect(result3.val).to.eql(["C", "ZZ"]);
+    expect(result3.val[0]).to.eql("C");
 
     expect(result4).to.be.instanceOf(Failure);
-    expect(result4.val).to.eql(["C", "Unexpected 'Z'"]);
+    expect(result4.val.slice(0, 2)).to.eql(["C", "Unexpected 'Z'"]);
   });
-  it("anyOf works", () => {
+  it.only("anyOf works", () => {
     const parceABOrC = anyOf(["A", "B", "C"]);
 
     const result1 = run(parceABOrC)("AZZ");

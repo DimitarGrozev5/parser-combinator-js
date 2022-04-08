@@ -92,8 +92,8 @@ class Parser {
     this.parserLabel = label;
   }
 }
-Parser.of = function (x) {
-  return new Parser(x);
+Parser.of = function (x, label) {
+  return new Parser(x, label);
 };
 
 class ParserPosition {
