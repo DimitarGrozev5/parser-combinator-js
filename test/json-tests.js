@@ -7,6 +7,8 @@ const {
   jUnicodeChar,
   jString,
   jNumber,
+  jNumber_,
+  jArray,
 } = require("../src/json-parser/json-parser");
 const {
   None,
@@ -137,8 +139,8 @@ describe("Tests for json parser", () => {
     expect(result3.val[0]).to.be.instanceOf(JNumber);
     expect(result3.val[0].val).to.equal(123.4);
 
-    const result4 = run(jNumber, "-123."); // JNumber -123.0 -- should fail!
-    const result5 = run(jNumber, "00.1"); // JNumber 0      -- should fail!
+    const result4 = run(jNumber_, "-123."); // JNumber -123.0 -- should fail!
+    const result5 = run(jNumber_, "00.1"); // JNumber 0      -- should fail!
 
     expect(result4).to.be.instanceOf(Failure);
     expect(result5).to.be.instanceOf(Failure);
@@ -149,12 +151,29 @@ describe("Tests for json parser", () => {
     // fraction and exponent
     const result7 = run(jNumber, "123.4e5"); // JNumber 12340000.0
     const result8 = run(jNumber, "123.4e-5"); // JNumber 0.001234
-    
+
     expect(result6.val[0]).to.be.instanceOf(JNumber);
     expect(result6.val[0].val).to.equal(1230000.0);
     expect(result7.val[0]).to.be.instanceOf(JNumber);
     expect(result7.val[0].val).to.equal(12340000.0);
     expect(result8.val[0]).to.be.instanceOf(JNumber);
     expect(result8.val[0].val).to.equal(0.001234);
+  });
+  it("jArray works for number", () => {
+    const result1 = run(jArray, "[ 1, 2 ]");
+    // Success (JArray [JNumber 1.0; JNumber 2.0],
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val[0]).to.be.instanceOf(JArray);
+    expect(result1.val[0].val).to.be.instanceOf(Array);
+    expect(result1.val[0].val[0]).to.be.instanceOf(JNumber);
+    expect(result1.val[0].val[0].val).to.equal(1);
+
+    const result2 = printResult(run(jArray, "[ 1, 2, ]"));
+    // Line:0 Col:6 Error parsing array
+    // [ 1, 2, ]
+    //       ^Unexpected ','
+    expect(result2).to.equal(
+      "Line:0 Col:6 Error parsing array\n[ 1, 2, ]\n      ^Unexpected ','"
+    );
   });
 });

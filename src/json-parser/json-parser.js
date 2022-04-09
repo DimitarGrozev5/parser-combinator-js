@@ -9,7 +9,10 @@ const {
   manyChars,
   opt,
   manyChars1,
+  spaces,
   spaces1,
+  sepBy,
+  between,
 } = require("../basic-parser");
 const { Parser, None, Some } = require("../types");
 const {
@@ -173,11 +176,22 @@ const jNumber = exp(() => {
     .andThen(opt(fractionPart))
     .andThen(opt(exponentPart))
     .mapP(convertToJNumber)
-    .andThen1(spaces1)
     .setLabel("number");
 });
+const jNumber_ = jNumber.andThen1(spaces1);
 
-const r = run(jNumber, "123");
+const jArray = exp(() => {
+  const left = pchar("[").andThen1(spaces);
+  const right = pchar("]").andThen1(spaces);
+  const comma = pchar(",").andThen1(spaces);
+  const value = jNumber.andThen1(spaces); ////////////////////////////////////////////////////////////////////
+
+  // set up the list parser
+  const values = sepBy(value, comma);
+
+  // set up the main parser
+  return between(left, values, right).mapP(JArray.of).setLabel("array");
+});
 
 module.exports = {
   jNull,
@@ -187,4 +201,6 @@ module.exports = {
   jUnicodeChar,
   jString,
   jNumber,
+  jNumber_,
+  jArray,
 };
