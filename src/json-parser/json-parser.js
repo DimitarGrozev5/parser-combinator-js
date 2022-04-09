@@ -9,6 +9,7 @@ const {
   manyChars,
   opt,
   manyChars1,
+  spaces1,
 } = require("../basic-parser");
 const { Parser, None, Some } = require("../types");
 const {
@@ -116,10 +117,10 @@ const jString = quotedString.mapP(JString.of).setLabel("quoted string");
 
 // utility function to convert an optional value
 // to a string, or "" if missing
-None.prototype.toString = function () {
+None.prototype.opToStr = function () {
   return "";
 };
-Some.prototype.toString = function (fn) {
+Some.prototype.opToStr = function (fn) {
   return fn(this.val);
 };
 /// Parse a JNumber
@@ -143,13 +144,12 @@ const jNumber = exp(() => {
   const convertToJNumber = ([[[optSign, intPart], fractionPart], expPart]) => {
     // convert to strings and let .NET parse them!
     // -- crude but ok for now.
-    const signStr = optSign.toString((x) => x);
-    console.log(signStr);
+    const signStr = optSign.opToStr((x) => x);
 
-    const fractionPartStr = fractionPart.toString((digits) => "." + digits);
+    const fractionPartStr = fractionPart.opToStr((digits) => "." + digits);
 
-    const expPartStr = expPart.toString(([optSign, digits]) => {
-      const sign = optSign.toString((x) => x);
+    const expPartStr = expPart.opToStr(([optSign, digits]) => {
+      const sign = optSign.opToStr((x) => x);
       return "e" + sign + digits;
     });
 
@@ -173,8 +173,11 @@ const jNumber = exp(() => {
     .andThen(opt(fractionPart))
     .andThen(opt(exponentPart))
     .mapP(convertToJNumber)
+    .andThen1(spaces1)
     .setLabel("number");
 });
+
+const r = run(jNumber, "123");
 
 module.exports = {
   jNull,

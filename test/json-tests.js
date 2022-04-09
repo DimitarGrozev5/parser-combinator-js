@@ -136,5 +136,25 @@ describe("Tests for json parser", () => {
     expect(result2.val[0].val).to.equal(-123);
     expect(result3.val[0]).to.be.instanceOf(JNumber);
     expect(result3.val[0].val).to.equal(123.4);
+
+    const result4 = run(jNumber, "-123."); // JNumber -123.0 -- should fail!
+    const result5 = run(jNumber, "00.1"); // JNumber 0      -- should fail!
+
+    expect(result4).to.be.instanceOf(Failure);
+    expect(result5).to.be.instanceOf(Failure);
+
+    // exponent only
+    const result6 = run(jNumber, "123e4"); // JNumber 1230000.0
+
+    // fraction and exponent
+    const result7 = run(jNumber, "123.4e5"); // JNumber 12340000.0
+    const result8 = run(jNumber, "123.4e-5"); // JNumber 0.001234
+    
+    expect(result6.val[0]).to.be.instanceOf(JNumber);
+    expect(result6.val[0].val).to.equal(1230000.0);
+    expect(result7.val[0]).to.be.instanceOf(JNumber);
+    expect(result7.val[0].val).to.equal(12340000.0);
+    expect(result8.val[0]).to.be.instanceOf(JNumber);
+    expect(result8.val[0].val).to.equal(0.001234);
   });
 });

@@ -299,11 +299,17 @@ const many1 = (parser) => {
 
 /// Parses a sequence of zero or more chars with the char parser cp.
 /// It returns the parsed chars as a string.
-const manyChars = (cp) => many(cp).mapP(charListToStr);
+const manyChars = (cp) =>
+  many(cp)
+    .mapP(charListToStr)
+    .setLabel(`zero or many ${getLabel(cp)}`);
 
 /// Parses a sequence of one or more chars with the char parser cp.
 /// It returns the parsed chars as a string.
-let manyChars1 = (cp) => many1(cp).mapP(charListToStr);
+let manyChars1 = (cp) =>
+  many1(cp)
+    .mapP(charListToStr)
+    .setLabel(`one or more ${getLabel(cp)}`);
 
 /// parse a whitespace char
 const whitespaceChar = (() => {
