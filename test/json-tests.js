@@ -5,6 +5,7 @@ const {
   jUnescapedChar,
   jEscapedChar,
   jUnicodeChar,
+  jString,
 } = require("../src/json-parser/json-parser");
 const {
   None,
@@ -96,5 +97,31 @@ describe("Tests for json parser", () => {
     const result = run(jUnicodeChar, "\\u263A"); //  Success ('☺')
 
     expect(result.val[0]).to.equal("☺");
+  });
+  it("jString works", () => {
+    const result1 = run(jString, '""');
+    // Success (JString "")
+    expect(result1.val[0]).to.be.instanceOf(JString);
+    expect(result1.val[0].val).to.equal("");
+
+    const result2 = run(jString, '"a"');
+    // Success (JString "a")
+    expect(result2.val[0]).to.be.instanceOf(JString);
+    expect(result2.val[0].val).to.equal("a");
+
+    const result3 = run(jString, '"ab"');
+    // Success (JString "ab")
+    expect(result3.val[0]).to.be.instanceOf(JString);
+    expect(result3.val[0].val).to.equal("ab");
+
+    const result4 = run(jString, '"ab\\tde"');
+    // Success (JString "ab\tde")
+    expect(result4.val[0]).to.be.instanceOf(JString);
+    expect(result4.val[0].val).to.equal("ab\tde");
+
+    const result5 = run(jString, '"ab\\u263Ade"');
+    // Success (JString "ab☺de")
+    expect(result5.val[0]).to.be.instanceOf(JString);
+    expect(result5.val[0].val).to.equal("ab☺de");
   });
 });

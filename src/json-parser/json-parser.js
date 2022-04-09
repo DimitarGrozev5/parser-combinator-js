@@ -6,6 +6,7 @@ const {
   choice,
   pchar,
   anyOf,
+  manyChars,
 } = require("../basic-parser");
 const { Parser } = require("../types");
 const {
@@ -89,9 +90,7 @@ const jUnicodeChar = exp(() => {
   // to a char
   const convertToChar = ([[[h1, h2], h3], h4]) => {
     const str = `${h1}${h2}${h3}${h4}`;
-    //Int32.Parse(str,Globalization.NumberStyles.HexNumber) |> char
-    
-    return String.fromCodePoint(parseInt(str, 16))
+    return String.fromCodePoint(parseInt(str, 16));
   };
 
   // set up the main parser
@@ -100,10 +99,24 @@ const jUnicodeChar = exp(() => {
   return backslash.andThen2(uChar).andThen2(fourHexDigits).mapP(convertToChar);
 });
 
+// Parse quoted string
+const quotedString = exp(() => {
+  const quote = pchar('"').setLabel("quote");
+  const jchar = jUnescapedChar.orElse(jEscapedChar).orElse(jUnicodeChar);
+
+  // set up the main parser
+  // quote >>. manyChars jchar .>> quote
+  return quote.andThen2(manyChars(jchar)).andThen1(quote);
+});
+
+/// Parse a JString
+const jString = quotedString.mapP(JString.of).setLabel("quoted string");
+
 module.exports = {
   jNull,
   jBool,
   jUnescapedChar,
   jEscapedChar,
   jUnicodeChar,
+  jString,
 };
