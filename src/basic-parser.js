@@ -433,6 +433,7 @@ const pfloat = (() => {
 })();
 
 module.exports = {
+  satisfy,
   printResult,
   setLabel,
   getLabel,

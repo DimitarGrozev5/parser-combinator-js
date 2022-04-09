@@ -1,5 +1,11 @@
 const { run, printResult } = require("../src/basic-parser");
-const { jNull, jBool } = require("../src/json-parser/json-parser");
+const {
+  jNull,
+  jBool,
+  jUnescapedChar,
+  jEscapedChar,
+  jUnicodeChar,
+} = require("../src/json-parser/json-parser");
 const {
   None,
   Some,
@@ -57,5 +63,38 @@ describe("Tests for json parser", () => {
     expect(printResult(result3)).to.equal(
       "Line:0 Col:0 Error parsing bool\ntruX\n^Unexpected 't'"
     );
+  });
+  it("jUnescapedChar works", () => {
+    const result1 = run(jUnescapedChar, "a").val[0];
+    // Success 'a'
+    expect(result1).to.equal("a");
+
+    const result2 = printResult(run(jUnescapedChar, "\\"));
+    expect(result2).to.equal(
+      "Line:0 Col:0 Error parsing char\n\\\n^Unexpected '\\'"
+    );
+    // Line:0 Col:0 Error parsing char
+    // \
+    // ^Unexpected '\'
+  });
+  it("jEscapedChar works", () => {
+    const result1 = run(jEscapedChar, "\\\\"); // Success '\\'
+    const result2 = run(jEscapedChar, "\\t"); // Success '\009'
+
+    expect(result1.val[0]).to.equal("\\");
+    expect(result2.val[0]).to.equal("\t");
+
+    const result3 = printResult(run(jEscapedChar, "a"));
+    expect(result3).to.equal(
+      "Line:0 Col:0 Error parsing escaped char\na\n^Unexpected 'a'"
+    );
+    // Line:0 Col:0 Error parsing escaped char
+    // a
+    // ^Unexpected 'a'
+  });
+  it("jUnicodeChar works", () => {
+    const result = run(jUnicodeChar, "\\u263A"); //  Success ('☺')
+
+    expect(result.val[0]).to.equal("☺");
   });
 });
