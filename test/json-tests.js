@@ -6,6 +6,7 @@ const {
   jEscapedChar,
   jUnicodeChar,
   jString,
+  jNumber,
 } = require("../src/json-parser/json-parser");
 const {
   None,
@@ -123,5 +124,17 @@ describe("Tests for json parser", () => {
     // Success (JString "ab☺de")
     expect(result5.val[0]).to.be.instanceOf(JString);
     expect(result5.val[0].val).to.equal("ab☺de");
+  });
+  it("jNumber works", () => {
+    const result1 = run(jNumber, "123"); // JNumber 123.0
+    const result2 = run(jNumber, "-123"); // JNumber -123.0
+    const result3 = run(jNumber, "123.4"); // JNumber 123.4
+
+    expect(result1.val[0]).to.be.instanceOf(JNumber);
+    expect(result1.val[0].val).to.equal(123);
+    expect(result2.val[0]).to.be.instanceOf(JNumber);
+    expect(result2.val[0].val).to.equal(-123);
+    expect(result3.val[0]).to.be.instanceOf(JNumber);
+    expect(result3.val[0].val).to.equal(123.4);
   });
 });

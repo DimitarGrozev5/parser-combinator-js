@@ -7,8 +7,10 @@ const {
   pchar,
   anyOf,
   manyChars,
+  opt,
+  manyChars1,
 } = require("../basic-parser");
-const { Parser } = require("../types");
+const { Parser, None, Some } = require("../types");
 const {
   JString,
   JNumber,
@@ -17,7 +19,7 @@ const {
   JObject,
   JArray,
 } = require("./json-types");
-const { exp } = require("../helpers");
+const { exp, pipe } = require("../helpers");
 
 // Parsing null
 Parser.prototype.return = function (type) {
@@ -112,6 +114,68 @@ const quotedString = exp(() => {
 /// Parse a JString
 const jString = quotedString.mapP(JString.of).setLabel("quoted string");
 
+// utility function to convert an optional value
+// to a string, or "" if missing
+None.prototype.toString = function () {
+  return "";
+};
+Some.prototype.toString = function (fn) {
+  return fn(this.val);
+};
+/// Parse a JNumber
+const jNumber = exp(() => {
+  // set up the "primitive" parsers
+  const optSign = opt(pchar("-"));
+  const zero = pstring("0");
+  const digitOneNine = satisfy((ch) => /[1-9]/.test(ch), "1-9");
+  const digit = satisfy((ch) => /[0-9]/.test(ch), "digit");
+  const point = pchar(".");
+  const e = pchar("e").orElse(pchar("E"));
+  const optPlusMinus = opt(pchar("-").orElse(pchar("+")));
+
+  const nonZeroInt = digitOneNine
+    .andThen(manyChars(digit))
+    .mapP(([first, rest]) => `${first}${rest}`);
+  const intPart = zero.orElse(nonZeroInt);
+  const fractionPart = point.andThen2(manyChars1(digit));
+  const exponentPart = e.andThen2(optPlusMinus).andThen(manyChars1(digit));
+
+  const convertToJNumber = ([[[optSign, intPart], fractionPart], expPart]) => {
+    // convert to strings and let .NET parse them!
+    // -- crude but ok for now.
+    const signStr = optSign.toString((x) => x);
+    console.log(signStr);
+
+    const fractionPartStr = fractionPart.toString((digits) => "." + digits);
+
+    const expPartStr = expPart.toString(([optSign, digits]) => {
+      const sign = optSign.toString((x) => x);
+      return "e" + sign + digits;
+    });
+
+    // add the parts together and convert to a float,
+    // then wrap in a JNumber
+    return pipe(signStr + intPart + fractionPartStr + expPartStr)(
+      parseFloat,
+      JNumber.of
+    );
+    // parseFloat(signStr + intPart + fractionPartStr + expPartStr)
+    // |> float
+    // |> JNumber
+  };
+
+  // set up the main parser
+  // optSign .>>. intPart .>>. opt fractionPart .>>. opt exponentPart
+  // |>> convertToJNumber
+  // <?> "number"   // add label
+  return optSign
+    .andThen(intPart)
+    .andThen(opt(fractionPart))
+    .andThen(opt(exponentPart))
+    .mapP(convertToJNumber)
+    .setLabel("number");
+});
+
 module.exports = {
   jNull,
   jBool,
@@ -119,4 +183,5 @@ module.exports = {
   jEscapedChar,
   jUnicodeChar,
   jString,
+  jNumber,
 };
