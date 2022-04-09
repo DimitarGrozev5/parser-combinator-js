@@ -9,6 +9,7 @@ const {
   jNumber,
   jNumber_,
   jArray,
+  jObject,
 } = require("../src/json-parser/json-parser");
 const {
   None,
@@ -174,6 +175,25 @@ describe("Tests for json parser", () => {
     //       ^Unexpected ','
     expect(result2).to.equal(
       "Line:0 Col:6 Error parsing array\n[ 1, 2, ]\n      ^Unexpected ','"
+    );
+  });
+  it("jObject works", () => {
+    const result1 = run(jObject, '{ "a":1, "b"  :  2 }');
+    // JObject (map [("a", JNumber 1.0); ("b", JNumber 2.0)]),
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val[0]).to.be.instanceOf(JObject);
+    expect(result1.val[0].val).to.be.instanceOf(Object);
+    expect(result1.val[0].val.a).to.be.instanceOf(JNumber);
+    expect(result1.val[0].val.a.val).to.equal(1);
+    expect(result1.val[0].val.b).to.be.instanceOf(JNumber);
+    expect(result1.val[0].val.b.val).to.equal(2);
+
+    const result2 = printResult(run(jObject, '{ "a":1, "b"  :  2, }'));
+    // Line:0 Col:18 Error parsing object
+    // { "a":1, "b"  :  2, }
+    //                   ^Unexpected ','
+    expect(result2).to.equal(
+      'Line:0 Col:18 Error parsing object\n{ "a":1, "b"  :  2, }\n                  ^Unexpected \',\''
     );
   });
 });

@@ -25,6 +25,17 @@ const {
 } = require("./json-types");
 const { exp, pipe } = require("../helpers");
 
+// Helper for jValue
+class jValue_ {
+  set parser(p) {
+    this.p = p;
+  }
+  get parser() {
+    return this.p;
+  }
+}
+const jValue = new jValue_();
+
 // Parsing null
 Parser.prototype.return = function (type) {
   return this.mapP((_) => type);
@@ -180,17 +191,47 @@ const jNumber = exp(() => {
 });
 const jNumber_ = jNumber.andThen1(spaces1);
 
+jValue.parser = jNumber;
+
 const jArray = exp(() => {
   const left = pchar("[").andThen1(spaces);
   const right = pchar("]").andThen1(spaces);
   const comma = pchar(",").andThen1(spaces);
-  const value = jNumber.andThen1(spaces); ////////////////////////////////////////////////////////////////////
+  const value = jValue.parser.andThen1(spaces); ////////////////////////////////////////////////////////////////////
 
   // set up the list parser
   const values = sepBy(value, comma);
 
   // set up the main parser
   return between(left, values, right).mapP(JArray.of).setLabel("array");
+});
+
+const jObject = exp(() => {
+  // set up the "primitive" parsers
+  const left = spaces.andThen2(pchar("{")).andThen1(spaces);
+  const right = pchar("}").andThen1(spaces);
+  const colon = pchar(":").andThen1(spaces);
+  const comma = pchar(",").andThen1(spaces);
+  const key = quotedString.andThen1(spaces);
+  const value = jValue.parser.andThen1(spaces);
+
+  // set up the list parser
+  const keyValue = key.andThen1(colon).andThen(value);
+  const keyValues = sepBy(keyValue, comma);
+
+  // Key value tuple to object
+  const kvToO = (list) =>
+    list.reduce((a, [key, value]) => ({ ...a, [key]: value }), {});
+
+  // set up the main parser
+  return between(left, keyValues, right)
+    .mapP(kvToO)
+    .mapP(JObject.of)
+    .setLabel("object");
+  // between left keyValues right
+  // |>> Map.ofList  // convert the list of keyValues into a Map
+  // |>> JObject     // wrap in JObject
+  // <?> "object"    // add label
 });
 
 module.exports = {
@@ -203,4 +244,5 @@ module.exports = {
   jNumber,
   jNumber_,
   jArray,
+  jObject,
 };
