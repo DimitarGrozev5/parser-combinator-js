@@ -25,16 +25,7 @@ const {
 } = require("./json-types");
 const { exp, pipe } = require("../helpers");
 
-// Helper for jValue
-class jValue_ {
-  set parser(p) {
-    this.p = p;
-  }
-  get parser() {
-    return this.p;
-  }
-}
-const jValue = new jValue_();
+const jValue = Parser.of(null);
 
 // Parsing null
 Parser.prototype.return = function (type) {
@@ -191,13 +182,11 @@ const jNumber = exp(() => {
 });
 const jNumber_ = jNumber.andThen1(spaces1);
 
-jValue.parser = jNumber;
-
 const jArray = exp(() => {
   const left = pchar("[").andThen1(spaces);
   const right = pchar("]").andThen1(spaces);
   const comma = pchar(",").andThen1(spaces);
-  const value = jValue.parser.andThen1(spaces); ////////////////////////////////////////////////////////////////////
+  const value = jValue.andThen1(spaces); ////////////////////////////////////////////////////////////////////
 
   // set up the list parser
   const values = sepBy(value, comma);
@@ -213,7 +202,7 @@ const jObject = exp(() => {
   const colon = pchar(":").andThen1(spaces);
   const comma = pchar(",").andThen1(spaces);
   const key = quotedString.andThen1(spaces);
-  const value = jValue.parser.andThen1(spaces);
+  const value = jValue.andThen1(spaces);
 
   // set up the list parser
   const keyValue = key.andThen1(colon).andThen(value);
@@ -234,6 +223,10 @@ const jObject = exp(() => {
   // <?> "object"    // add label
 });
 
+const jValue_ = choice([jNull, jBool, jNumber, jString, jArray, jObject]);
+
+jValue.parser = jValue_.parser;
+
 module.exports = {
   jNull,
   jBool,
@@ -245,4 +238,5 @@ module.exports = {
   jNumber_,
   jArray,
   jObject,
+  jValue,
 };

@@ -10,6 +10,7 @@ const {
   jNumber_,
   jArray,
   jObject,
+  jValue,
 } = require("../src/json-parser/json-parser");
 const {
   None,
@@ -195,5 +196,18 @@ describe("Tests for json parser", () => {
     expect(result2).to.equal(
       'Line:0 Col:18 Error parsing object\n{ "a":1, "b"  :  2, }\n                  ^Unexpected \',\''
     );
+  });
+  it.only("jValue works", () => {
+    const example1 = `{
+      "name" : "Scott",
+      "isMale" : true,
+      "bday" : {"year":2001, "month":12, "day":25 },
+      "favouriteColors" : ["blue", "green"],
+      "emptyArray" : [],
+      "emptyObject" : {}
+    }`;
+    const result1 = run(jValue, example1);
+    expect(result1).to.be.instanceOf(Success);
+    expect(result1.val[0]).to.be.instanceOf(JObject);
   });
 });
